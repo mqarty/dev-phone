@@ -1,8 +1,36 @@
 import { Anchor, Box, Column, Grid, Flex, Text, MediaFigure, MediaBody, MediaObject, Tooltip } from "@twilio-paste/core";
 import { LogoTwilioIcon } from '@twilio-paste/icons/esm/LogoTwilioIcon';
 import { InformationIcon } from "@twilio-paste/icons/esm/InformationIcon";
+import { CopyIcon } from "@twilio-paste/icons/esm/CopyIcon";
 
 function Header({ devPhoneName, numberInUse }) {
+    const handleCopyNumber = async (event) => {
+        event.preventDefault();
+
+        if (!numberInUse) {
+            return;
+        }
+
+        try {
+            if (navigator?.clipboard?.writeText) {
+                await navigator.clipboard.writeText(numberInUse);
+                return;
+            }
+        } catch (error) {
+            // Fallback to legacy copy flow if the Clipboard API isn't available or allowed.
+        }
+
+        const input = document.createElement('textarea');
+        input.value = numberInUse;
+        input.setAttribute('readonly', '');
+        input.style.position = 'absolute';
+        input.style.left = '-9999px';
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+    };
+
     return (
         <Box
             width="100%"
@@ -43,7 +71,19 @@ function Header({ devPhoneName, numberInUse }) {
                 </Column>
                 <Column span={2}>
                     <Flex hAlignContent={"center"} vertical grow height="100%" vAlignContent={"center"} >
-                        <Text as="p" color={"colorTextInverse"}> {numberInUse ? numberInUse : "N/A"}</Text>
+                        <Flex hAlignContent={"center"} vAlignContent={"center"}>
+                            <Text as="p" color={"colorTextInverse"}>{numberInUse ? numberInUse : "N/A"}</Text>
+                            <Tooltip text="Copy Twilio Number">
+                                <Anchor
+                                    href="javascript:void"
+                                    variant="inverse"
+                                    marginLeft="space20"
+                                    onClick={handleCopyNumber}
+                                >
+                                    <CopyIcon decorative={false} title="Copy Twilio Number" display="block" />
+                                </Anchor>
+                            </Tooltip>
+                        </Flex>
                         <Flex width={"100%"} hAlignContent={"center"}>
                             <Text as="p" marginRight={"space20"} color="colorTextInverse" fontWeight={"fontWeightSemibold"} variant="default">Twilio Number</Text>
                             <Tooltip text="Text or call this Twilio phone number to connect to your Dev Phone.">
