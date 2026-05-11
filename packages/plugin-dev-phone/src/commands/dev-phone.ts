@@ -65,8 +65,8 @@ class DevPhoneServer extends TwilioClientCommand {
 
         // set user agent header on twilio client
         this.twilioClient.userAgentExtensions = [
-            `@mqarty/dev-phone/${version}`,
-            `@mqarty/dev-phone/helper-library`,
+            `@mqarty/plugin-dev-phone/${version}`,
+            `@mqarty/plugin-dev-phone/helper-library`,
             'serverless-functions'
         ]
 

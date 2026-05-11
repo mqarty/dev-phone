@@ -39,6 +39,9 @@
     "/oclif.manifest.json",
     "/dist"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "homepage": "https://github.com/mqarty/dev-phone/packages/dev-phone",
   "keywords": [
     "oclif-plugin"
