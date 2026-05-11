@@ -1,12 +1,28 @@
 import { useContext, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux'
-import { Button, Flex, Stack, Grid, Column, Box, ScreenReaderOnly } from "@twilio-paste/core";
+import { Button, Flex, Stack, Grid, Column, Box, ScreenReaderOnly, Text } from "@twilio-paste/core";
 import { MicrophoneOnIcon } from "@twilio-paste/icons/cjs/MicrophoneOnIcon";
 import { MicrophoneOffIcon } from "@twilio-paste/icons/cjs/MicrophoneOffIcon";
 import { TwilioVoiceContext } from '../WebsocketManagers/VoiceManager';
 import DTMFButton from './DtmfButton';
 import { addDigitToDestinationNumber } from '../../actions';
 import CallStatusMessage from './StatusMessage';
+
+function getIncomingCallerNumber(call) {
+    if (!call) {
+        return null;
+    }
+
+    const customFrom = call.customParameters && typeof call.customParameters.get === 'function'
+        ? call.customParameters.get('From') || call.customParameters.get('from')
+        : null;
+
+    return call.parameters?.From
+        || call.parameters?.from
+        || call._options?.twimlParams?.from
+        || customFrom
+        || null;
+}
 
 function Dialer() {
     const currentCallInfo = useSelector((state) => state.currentCallInfo)
@@ -53,6 +69,7 @@ function Dialer() {
 
     const isCallInProgress = !!currentCallInfo;
     const isIncomingCall = acceptCall && currentCallInfo && currentCallInfo._direction === 'INCOMING';
+    const incomingCallerNumber = isIncomingCall ? getIncomingCallerNumber(currentCallInfo) : null;
 
     return (
         <Box width="100%" paddingTop="space60">
@@ -63,9 +80,9 @@ function Dialer() {
                             <CallStatusMessage voiceDevice={voiceDevice} currentCallInfo={currentCallInfo} />
                         </Flex>
                         <Flex>
-                            { isCallInProgress && <Button variant="secondary_icon" size="reset" onClick={toggleMute}>
-                                {!isMuted ? <MicrophoneOnIcon size="sizeIcon20" title="Mute" decorative={false}/> : <MicrophoneOffIcon size="sizeIcon20" title="Mute" decorative={false} />}
-                            </Button> }
+                            {isCallInProgress && <Button variant="secondary_icon" size="reset" onClick={toggleMute}>
+                                {!isMuted ? <MicrophoneOnIcon size="sizeIcon20" title="Mute" decorative={false} /> : <MicrophoneOffIcon size="sizeIcon20" title="Mute" decorative={false} />}
+                            </Button>}
                         </Flex>
                     </Flex>
                     <Flex>
@@ -81,6 +98,15 @@ function Dialer() {
                         {generateDTMFColumn(['*', '0', '#'])}
                     </Flex>
                     <Grid spacing="space30" gutter="space30" marginBottom="space40">
+                        {isIncomingCall && (
+                            <Column span={12}>
+                                <Flex hAlignContent="center">
+                                    <Text as="p" fontWeight="fontWeightSemibold">
+                                        Incoming from: {incomingCallerNumber || 'Unknown caller'}
+                                    </Text>
+                                </Flex>
+                            </Column>
+                        )}
                         <Column span={isIncomingCall ? 6 : !isCallInProgress ? 12 : 0}>
                             {isIncomingCall ?
                                 <Button
