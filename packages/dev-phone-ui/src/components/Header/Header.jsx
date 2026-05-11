@@ -1,9 +1,29 @@
-import { Anchor, Box, Column, Grid, Flex, Text, MediaFigure, MediaBody, MediaObject, Tooltip } from "@twilio-paste/core";
+import { useEffect, useRef, useState } from 'react';
+import { Alert, Anchor, Box, Column, Grid, Flex, Text, MediaFigure, MediaBody, MediaObject, Tooltip } from "@twilio-paste/core";
 import { LogoTwilioIcon } from '@twilio-paste/icons/esm/LogoTwilioIcon';
 import { InformationIcon } from "@twilio-paste/icons/esm/InformationIcon";
 import { CopyIcon } from "@twilio-paste/icons/esm/CopyIcon";
 
 function Header({ devPhoneName, numberInUse }) {
+    const [showCopyToast, setShowCopyToast] = useState(false);
+    const copyToastTimeoutRef = useRef(null);
+
+    useEffect(() => {
+        return () => {
+            if (copyToastTimeoutRef.current) {
+                clearTimeout(copyToastTimeoutRef.current);
+            }
+        };
+    }, []);
+
+    const showCopiedToast = () => {
+        setShowCopyToast(true);
+        if (copyToastTimeoutRef.current) {
+            clearTimeout(copyToastTimeoutRef.current);
+        }
+        copyToastTimeoutRef.current = setTimeout(() => setShowCopyToast(false), 2000);
+    };
+
     const handleCopyNumber = async (event) => {
         event.preventDefault();
 
@@ -14,6 +34,7 @@ function Header({ devPhoneName, numberInUse }) {
         try {
             if (navigator?.clipboard?.writeText) {
                 await navigator.clipboard.writeText(numberInUse);
+                showCopiedToast();
                 return;
             }
         } catch (error) {
@@ -29,6 +50,7 @@ function Header({ devPhoneName, numberInUse }) {
         input.select();
         document.execCommand('copy');
         document.body.removeChild(input);
+        showCopiedToast();
     };
 
     return (
@@ -40,6 +62,13 @@ function Header({ devPhoneName, numberInUse }) {
             color="colorTextInverse"
             padding={"space60"}
         >
+            {showCopyToast && (
+                <Box marginBottom="space40">
+                    <Alert variant="neutral">
+                        Copied Twilio number to clipboard
+                    </Alert>
+                </Box>
+            )}
             <Grid gutter={"space50"}>
                 <Column span={3}>
                     <MediaObject verticalAlign="center">
