@@ -1,4 +1,4 @@
-import React, {useCallback, useState, useEffect, useRef} from 'react'
+import React, { useCallback, useState, useEffect, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { Device } from '@twilio/voice-sdk'
 import { updateCallInformation, updateMuteStatus } from '../../actions'
@@ -43,6 +43,10 @@ const TwilioVoiceManager = ({ children }) => {
     useEffect(() => {
         if (activeCall) {
             deviceDetails.current.acceptCall = () => activeCall.accept()
+            deviceDetails.current.declineCall = () => {
+                activeCall.reject()
+                setActiveCall(null)
+            }
             updateCallInfo(activeCall)
 
             // Responsible for disconnecting a specific call
@@ -58,7 +62,7 @@ const TwilioVoiceManager = ({ children }) => {
             }
 
             deviceDetails.current.toggleMute = () => {
-                 console.log('activeCall', activeCall);
+                console.log('activeCall', activeCall);
                 if (!activeCall) {
                     return;
                 }
@@ -109,11 +113,12 @@ const TwilioVoiceManager = ({ children }) => {
 
         deviceDetails.current = {
             voiceDevice: voiceDevice,
-            hangUp: () => {},
-            sendDTMF: () => {},
+            hangUp: () => { },
+            declineCall: () => { },
+            sendDTMF: () => { },
             updateCallInfo,
             makeCall,
-            toggleMute: () => {}
+            toggleMute: () => { }
         }
     }
 

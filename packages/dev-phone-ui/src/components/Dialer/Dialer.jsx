@@ -1,8 +1,9 @@
-import { useContext, useMemo } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux'
-import { Button, Flex, Stack, Grid, Column, Box, ScreenReaderOnly, Text } from "@twilio-paste/core";
+import { Alert, Button, Flex, Stack, Grid, Column, Box, ScreenReaderOnly, Text } from "@twilio-paste/core";
 import { MicrophoneOnIcon } from "@twilio-paste/icons/cjs/MicrophoneOnIcon";
 import { MicrophoneOffIcon } from "@twilio-paste/icons/cjs/MicrophoneOffIcon";
+import { CopyIcon } from "@twilio-paste/icons/esm/CopyIcon";
 import { TwilioVoiceContext } from '../WebsocketManagers/VoiceManager';
 import DTMFButton from './DtmfButton';
 import { addDigitToDestinationNumber } from '../../actions';
@@ -29,9 +30,19 @@ function Dialer() {
     const destinationNumber = useSelector(state => state.destinationNumber)
     const isMuted = useSelector(state => state.isMuted)
     const dispatch = useDispatch();
+    const [showCopyToast, setShowCopyToast] = useState(false)
+    const copyToastTimeoutRef = useRef(null)
 
     const dialer = useContext(TwilioVoiceContext)
-    const { acceptCall, voiceDevice } = dialer
+    const { acceptCall, declineCall, voiceDevice } = dialer
+
+    useEffect(() => {
+        return () => {
+            if (copyToastTimeoutRef.current) {
+                clearTimeout(copyToastTimeoutRef.current)
+            }
+        }
+    }, [])
 
     const hasValidDestinationNumber = useMemo(() => {
         return destinationNumber && destinationNumber.length > 6
@@ -43,6 +54,10 @@ function Dialer() {
 
     function hangUp() {
         dialer.hangUp()
+    }
+
+    function declineIncomingCall() {
+        declineCall()
     }
 
     function toggleMute() {
@@ -69,12 +84,38 @@ function Dialer() {
 
     const isCallInProgress = !!currentCallInfo;
     const isIncomingCall = acceptCall && currentCallInfo && currentCallInfo._direction === 'INCOMING';
+    const isIncomingCallRinging = isIncomingCall && currentCallInfo._mediaStatus !== "open";
     const incomingCallerNumber = isIncomingCall ? getIncomingCallerNumber(currentCallInfo) : null;
+
+    function showCopiedToast() {
+        setShowCopyToast(true)
+        if (copyToastTimeoutRef.current) {
+            clearTimeout(copyToastTimeoutRef.current)
+        }
+        copyToastTimeoutRef.current = setTimeout(() => setShowCopyToast(false), 2000)
+    }
+
+    function copyIncomingCallerNumber() {
+        if (!incomingCallerNumber || typeof navigator === 'undefined' || !navigator.clipboard?.writeText) {
+            return;
+        }
+
+        navigator.clipboard.writeText(incomingCallerNumber)
+            .then(showCopiedToast)
+            .catch(() => { })
+    }
 
     return (
         <Box width="100%" paddingTop="space60">
             <Stack orientation="vertical" spacing="space60">
                 <Box width="100%">
+                    {showCopyToast && (
+                        <Box marginBottom="space40">
+                            <Alert variant="neutral">
+                                Copied caller number to clipboard
+                            </Alert>
+                        </Box>
+                    )}
                     <Flex>
                         <Flex grow hAlignContent={"center"}>
                             <CallStatusMessage voiceDevice={voiceDevice} currentCallInfo={currentCallInfo} />
@@ -100,21 +141,30 @@ function Dialer() {
                     <Grid spacing="space30" gutter="space30" marginBottom="space40">
                         {isIncomingCall && (
                             <Column span={12}>
-                                <Flex hAlignContent="center">
+                                <Flex hAlignContent="center" vAlignContent="center" columnGap="space30">
                                     <Text as="p" fontWeight="fontWeightSemibold">
                                         Incoming from: {incomingCallerNumber || 'Unknown caller'}
                                     </Text>
+                                    <Button
+                                        variant="secondary_icon"
+                                        size="reset"
+                                        onClick={copyIncomingCallerNumber}
+                                        disabled={!incomingCallerNumber}
+                                    >
+                                        <ScreenReaderOnly>Copy incoming caller number</ScreenReaderOnly>
+                                        <CopyIcon decorative={false} title="Copy incoming caller number" />
+                                    </Button>
                                 </Flex>
                             </Column>
                         )}
-                        <Column span={isIncomingCall ? 6 : !isCallInProgress ? 12 : 0}>
-                            {isIncomingCall ?
+                        <Column span={isIncomingCallRinging ? 6 : !isCallInProgress ? 12 : 0}>
+                            {isIncomingCallRinging ?
                                 <Button
                                     fullWidth={true}
-                                    disabled={currentCallInfo._mediaStatus === "open"}
+                                    disabled={false}
                                     onClick={acceptCall}
                                     variant="primary" >
-                                    Accept call
+                                    Answer
                                 </Button>
                                 : isCallInProgress ? null : <Button
                                     fullWidth={true}
@@ -124,8 +174,15 @@ function Dialer() {
                                 </Button>
                             }
                         </Column>
-                        <Column span={isCallInProgress && isIncomingCall ? 6 : isCallInProgress ? 12 : 0}>
-                            {(isCallInProgress || isIncomingCall) && <Button
+                        <Column span={isIncomingCallRinging ? 6 : (isCallInProgress ? 12 : 0)}>
+                            {isIncomingCallRinging && <Button
+                                fullWidth={true}
+                                disabled={!currentCallInfo}
+                                onClick={declineIncomingCall}
+                                variant="destructive" >
+                                Decline
+                            </Button>}
+                            {isCallInProgress && !isIncomingCallRinging && <Button
                                 fullWidth={true}
                                 disabled={!currentCallInfo}
                                 onClick={hangUp}
