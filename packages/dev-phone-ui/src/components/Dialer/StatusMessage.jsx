@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
-import { Box, Flex, MediaBody, MediaFigure, MediaObject, Text } from "@twilio-paste/core";
+import { useEffect, useRef, useState } from "react";
+import { Alert, Box, Button, Flex, MediaBody, MediaFigure, MediaObject, ScreenReaderOnly, Text } from "@twilio-paste/core";
+import { CopyIcon } from "@twilio-paste/icons/esm/CopyIcon";
 
 function getIncomingCallerNumber(call) {
     if (!call) {
@@ -28,9 +29,53 @@ function getOutgoingDestinationNumber(call) {
         || null;
 }
 
+function getConnectedPeerNumber(call) {
+    if (!call) {
+        return null;
+    }
+
+    if (call._direction === 'OUTGOING') {
+        return getOutgoingDestinationNumber(call);
+    }
+
+    return getIncomingCallerNumber(call);
+}
+
 function CallStatusMessage({ voiceDevice, currentCallInfo }) {
     const [message, setMessage] = useState('initializing')
     const [statusColor, setStatusColor] = useState('colorBackgroundBusy')
+    const [showCopyToast, setShowCopyToast] = useState(false)
+    const copyToastTimeoutRef = useRef(null)
+
+    const connectedPeerNumber = currentCallInfo && currentCallInfo._wasConnected
+        ? getConnectedPeerNumber(currentCallInfo)
+        : null;
+
+    useEffect(() => {
+        return () => {
+            if (copyToastTimeoutRef.current) {
+                clearTimeout(copyToastTimeoutRef.current)
+            }
+        }
+    }, [])
+
+    function showCopiedToast() {
+        setShowCopyToast(true)
+        if (copyToastTimeoutRef.current) {
+            clearTimeout(copyToastTimeoutRef.current)
+        }
+        copyToastTimeoutRef.current = setTimeout(() => setShowCopyToast(false), 2000)
+    }
+
+    function copyConnectedPeerNumber() {
+        if (!connectedPeerNumber || typeof navigator === 'undefined' || !navigator.clipboard?.writeText) {
+            return;
+        }
+
+        navigator.clipboard.writeText(connectedPeerNumber)
+            .then(showCopiedToast)
+            .catch(() => { })
+    }
 
     useEffect(() => {
         if (voiceDevice && !currentCallInfo) {
@@ -48,19 +93,37 @@ function CallStatusMessage({ voiceDevice, currentCallInfo }) {
                 setMessage(callerNumber ? `incoming call from ${callerNumber}` : 'incoming call')
             }
             if (currentCallInfo && currentCallInfo._wasConnected) {
-                setMessage('call connected')
+                const peerNumber = getConnectedPeerNumber(currentCallInfo)
+                setMessage(peerNumber ? `Connected to ${peerNumber}` : 'Call connected')
                 setStatusColor('colorBackgroundSuccess')
             }
         }
     }, [voiceDevice, currentCallInfo])
 
     return (
-        <Flex hAlignContent={"center"}>
-            <MediaObject verticalAlign="center">
-                <MediaFigure spacing={"space20"}><Box borderRadius={"borderRadiusCircle"} padding={"space20"} backgroundColor={statusColor} /></MediaFigure>
-                <MediaBody><Text as={"p"} fontStyle={"italic"}>{message}</Text></MediaBody>
-            </MediaObject>
-        </Flex>
+        <Box>
+            {showCopyToast && (
+                <Box marginBottom="space30">
+                    <Alert variant="neutral">Copied connected number to clipboard</Alert>
+                </Box>
+            )}
+            <Flex hAlignContent={"center"}>
+                <MediaObject verticalAlign="center">
+                    <MediaFigure spacing={"space20"}><Box borderRadius={"borderRadiusCircle"} padding={"space20"} backgroundColor={statusColor} /></MediaFigure>
+                    <MediaBody>
+                        <Flex vAlignContent="center" columnGap="space30">
+                            <Text as={"p"} fontStyle={"italic"}>{message}</Text>
+                            {connectedPeerNumber && (
+                                <Button variant="secondary_icon" size="reset" onClick={copyConnectedPeerNumber}>
+                                    <ScreenReaderOnly>Copy connected number</ScreenReaderOnly>
+                                    <CopyIcon decorative={false} title="Copy connected number" />
+                                </Button>
+                            )}
+                        </Flex>
+                    </MediaBody>
+                </MediaObject>
+            </Flex>
+        </Box>
     )
 }
 
