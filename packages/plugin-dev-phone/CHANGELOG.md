@@ -1,5 +1,16 @@
 # @twilio-labs/plugin-dev-phone
 
+## 1.0.0-beta.10
+
+### Major Changes
+
+- 1905d8c: call sid copy
+
+### Patch Changes
+
+- Updated dependencies [1905d8c]
+  - @mqarty/dev-phone-ui@1.0.0-beta.7
+
 ## 1.0.0-beta.9
 
 ### Major Changes

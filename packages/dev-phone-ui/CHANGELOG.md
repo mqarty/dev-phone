@@ -1,5 +1,11 @@
 # @twilio-labs/dev-phone-ui
 
+## 1.0.0-beta.7
+
+### Major Changes
+
+- 1905d8c: call sid copy
+
 ## 1.0.0-beta.6
 
 ### Major Changes
