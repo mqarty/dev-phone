@@ -33,7 +33,7 @@ function getCallSids(call) {
     if (!call) return [];
     const candidates = [
         { label: 'Params SID', value: call.parameters?.CallSid || call.parameters?.callSid || null },
-        { label: 'SDK SID',    value: call._callSid || null },
+        { label: 'SDK SID', value: call._callSid || null },
         { label: 'Options SID', value: call._options?.callSid || null },
     ];
     const seen = new Set();
@@ -86,7 +86,7 @@ function CallStatusBar() {
         if (!value || !navigator.clipboard?.writeText) return;
         navigator.clipboard.writeText(value)
             .then(() => showCopiedToast(`Copied ${label} to clipboard`))
-            .catch(() => {});
+            .catch(() => { });
     }
 
     return (
