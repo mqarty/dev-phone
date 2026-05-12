@@ -3,6 +3,8 @@ import { useSelector, useDispatch } from 'react-redux'
 import { Device } from '@twilio/voice-sdk'
 import { updateCallInformation, updateMuteStatus } from '../../actions'
 
+const QUIETER_INCOMING_RINGTONE_URL = 'https://sdk.twilio.com/js/client/sounds/releases/1.0.0/outgoing.mp3'
+
 // Establish context with relevant websocket resources for child components
 const TwilioVoiceContext = React.createContext(null)
 export { TwilioVoiceContext }
@@ -95,7 +97,10 @@ const TwilioVoiceManager = ({ children }) => {
             codecPreferences: ["opus", "pcmu"],
             fakeLocalDTMF: true,
             debug: false,
-            enableRingingState: true
+            enableRingingState: true,
+            sounds: {
+                incoming: QUIETER_INCOMING_RINGTONE_URL
+            }
         })
 
 
