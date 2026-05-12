@@ -29,16 +29,25 @@ function getConnectedPeerNumber(call) {
     return getIncomingCallerNumber(call);
 }
 
+const CUSTOM_PARAM_DENY_LIST = new Set([
+    'request', 'CallToken', 'CallSid', 'Direction',
+    'To', 'From', 'Called', 'Caller',
+    'ToState', 'ToZip', 'ToCountry', 'ToCity',
+    'CallerCountry', 'CallerState', 'CallerZip', 'CallerCity',
+    'FromState', 'FromZip', 'FromCountry', 'FromCity',
+    'StirVerstat', 'ApiVersion', 'AccountSid',
+]);
+
 function getCallSids(call) {
     if (!call) return [];
-    const parentSid = call.customParameters && typeof call.customParameters.get === 'function'
-        ? call.customParameters.get('ParentCallSid') || null
+    const cp = call.customParameters && typeof call.customParameters.get === 'function'
+        ? call.customParameters
         : null;
     const candidates = [
         { label: 'Params SID', value: call.parameters?.CallSid || call.parameters?.callSid || null },
         { label: 'SDK SID', value: call._callSid || null },
         { label: 'Options SID', value: call._options?.callSid || null },
-        { label: 'Parent SID', value: parentSid },
+        { label: 'Parent SID', value: cp?.get('CallSid') || cp?.get('ParentCallSid') || null },
     ];
     const seen = new Set();
     return candidates.filter(({ value }) => {
@@ -69,7 +78,12 @@ function CallStatusBar() {
     const customParams = (() => {
         const cp = currentCallInfo.customParameters;
         if (!cp || typeof cp.entries !== 'function') return [];
-        return Array.from(cp.entries());
+        return Array.from(cp.entries()).filter(([key, value]) =>
+            !CUSTOM_PARAM_DENY_LIST.has(key) &&
+            value !== null &&
+            value !== '' &&
+            !String(value).startsWith('[object')
+        );
     })();
 
     let statusLabel;
@@ -109,7 +123,7 @@ function CallStatusBar() {
             borderBottomWidth="borderWidth10"
             borderBottomColor="colorBorderInfoWeak"
         >
-            <Flex vAlignContent="center" columnGap="space80" flexWrap="wrap" rowGap="space40">
+            <Flex vertical rowGap="space30">
                 <Flex vAlignContent="center" columnGap="space30">
                     <Text as="span" fontWeight="fontWeightSemibold" fontSize="fontSize40">
                         {statusLabel}:
@@ -140,7 +154,7 @@ function CallStatusBar() {
                 ))}
             </Flex>
             {customParams.length > 0 && (
-                <Flex vAlignContent="center" columnGap="space60" flexWrap="wrap" rowGap="space40" marginTop="space50">
+                <Flex vertical rowGap="space30" marginTop="space50">
                     {customParams.map(([key, value]) => (
                         <Flex key={key} vAlignContent="center" columnGap="space30">
                             <Text as="span" fontSize="fontSize30" fontWeight="fontWeightSemibold" color="colorTextWeak">
