@@ -36,21 +36,25 @@ function App() {
   return (
     <Box width={"100vw"} minHeight={"100vh"} backgroundColor={"colorBackground"}>
       <Header devPhoneName={channelData.devPhoneName} numberInUse={numberInUse} />
-      <style>{`
-        @keyframes waitingSweep {
-          0%   { background-position: 0% 50%; }
-          100% { background-position: 100% 50%; }
-        }
-      `}</style>
-      <Box
-        width="100%"
-        height="3px"
-        style={{
-          background: 'linear-gradient(90deg, #c8e6fa, #0263e0, #004099, #0263e0, #c8e6fa)',
-          backgroundSize: '200% 100%',
-          animation: 'waitingSweep 2.5s ease-in-out infinite alternate',
-        }}
-      />
+      {channelData.devPhoneName && (
+        <>
+          <style>{`
+            @keyframes waitingSweep {
+              0%   { background-position: 0% 50%; }
+              100% { background-position: 100% 50%; }
+            }
+          `}</style>
+          <Box
+            width="100%"
+            height="3px"
+            style={{
+              background: 'linear-gradient(90deg, #c8e6fa, #0263e0, #004099, #0263e0, #c8e6fa)',
+              backgroundSize: '200% 100%',
+              animation: 'waitingSweep 2.5s ease-in-out infinite alternate',
+            }}
+          />
+        </>
+      )}
       <DevDisclaimer />
       <CallStatusBar />
       {numberInUse ? (
