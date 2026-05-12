@@ -101,11 +101,6 @@ function CallStatusMessage({ voiceDevice, currentCallInfo }) {
 
     return (
         <Box>
-            {showCopyToast && (
-                <Box marginBottom="space30">
-                    <Alert variant="neutral">Copied connected number to clipboard</Alert>
-                </Box>
-            )}
             <Flex hAlignContent={"center"}>
                 <MediaObject verticalAlign="center">
                     <MediaFigure spacing={"space20"}><Box borderRadius={"borderRadiusCircle"} padding={"space20"} backgroundColor={statusColor} /></MediaFigure>
@@ -122,6 +117,11 @@ function CallStatusMessage({ voiceDevice, currentCallInfo }) {
                     </MediaBody>
                 </MediaObject>
             </Flex>
+            {showCopyToast && (
+                <Box marginTop="space30">
+                    <Alert variant="neutral">Copied connected number to clipboard</Alert>
+                </Box>
+            )}
         </Box>
     )
 }

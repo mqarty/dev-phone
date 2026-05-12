@@ -62,13 +62,6 @@ function Header({ devPhoneName, numberInUse }) {
             color="colorTextInverse"
             padding={"space60"}
         >
-            {showCopyToast && (
-                <Box marginBottom="space40">
-                    <Alert variant="neutral">
-                        Copied Twilio number to clipboard
-                    </Alert>
-                </Box>
-            )}
             <Grid gutter={"space50"}>
                 <Column span={3}>
                     <MediaObject verticalAlign="center">
@@ -124,6 +117,13 @@ function Header({ devPhoneName, numberInUse }) {
                     </Flex>
                 </Column>
             </Grid>
+            {showCopyToast && (
+                <Box marginTop="space40">
+                    <Alert variant="neutral">
+                        Copied Twilio number to clipboard
+                    </Alert>
+                </Box>
+            )}
         </Box>
     )
 }
