@@ -1,5 +1,11 @@
 # @twilio-labs/dev-phone-ui
 
+## 1.0.0-beta.8
+
+### Major Changes
+
+- 783fe2d: Better toast
+
 ## 1.0.0-beta.7
 
 ### Major Changes

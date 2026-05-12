@@ -1,5 +1,16 @@
 # @twilio-labs/plugin-dev-phone
 
+## 1.0.0-beta.11
+
+### Major Changes
+
+- 783fe2d: Better toast
+
+### Patch Changes
+
+- Updated dependencies [783fe2d]
+  - @mqarty/dev-phone-ui@1.0.0-beta.8
+
 ## 1.0.0-beta.10
 
 ### Major Changes
