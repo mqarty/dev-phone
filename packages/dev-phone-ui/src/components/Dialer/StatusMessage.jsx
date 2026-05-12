@@ -154,9 +154,24 @@ function CallStatusMessage({ voiceDevice, currentCallInfo }) {
                 </MediaObject>
             </Flex>
             {showCopyToast && (
-                <Box marginTop="space30">
-                    <Alert variant="neutral">{copyToastMessage}</Alert>
-                </Box>
+                <>
+                    <style>{`
+                        @keyframes toastFadeOut {
+                            0%, 75% { opacity: 1; }
+                            100% { opacity: 0; }
+                        }
+                    `}</style>
+                    <Box
+                        position="fixed"
+                        bottom="space70"
+                        right="space70"
+                        zIndex="zIndex90"
+                        boxShadow="shadowCard"
+                        style={{ animation: 'toastFadeOut 2s ease-in forwards', minWidth: '240px' }}
+                    >
+                        <Alert variant="neutral">{copyToastMessage}</Alert>
+                    </Box>
+                </>
             )}
         </Box>
     )
