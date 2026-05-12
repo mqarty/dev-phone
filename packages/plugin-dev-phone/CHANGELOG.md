@@ -1,5 +1,16 @@
 # @twilio-labs/plugin-dev-phone
 
+## 1.0.0-beta.14
+
+### Minor Changes
+
+- a6219e0: Light bar
+
+### Patch Changes
+
+- Updated dependencies [a6219e0]
+  - @mqarty/dev-phone-ui@1.0.0-beta.11
+
 ## 1.0.0-beta.13
 
 ### Minor Changes

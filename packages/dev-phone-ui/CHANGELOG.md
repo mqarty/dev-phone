@@ -1,5 +1,11 @@
 # @twilio-labs/dev-phone-ui
 
+## 1.0.0-beta.11
+
+### Minor Changes
+
+- a6219e0: Light bar
+
 ## 1.0.0-beta.10
 
 ### Minor Changes
