@@ -42,5 +42,7 @@ jobs:
           title: "chore: release packages"
           commit: "chore: release packages"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Use a PAT when Actions is not allowed to create PRs with GITHUB_TOKEN.
+          # Create RELEASE_PLEASE_TOKEN (classic or fine-grained) with contents + pull_requests write.
+          GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN != '' && secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
