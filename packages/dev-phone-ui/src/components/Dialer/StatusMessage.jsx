@@ -89,8 +89,7 @@ function CallStatusMessage({ voiceDevice, currentCallInfo }) {
                 const destinationNumber = getOutgoingDestinationNumber(currentCallInfo)
                 setMessage(destinationNumber ? `calling ${destinationNumber}` : 'calling')
             } else {
-                const callerNumber = getIncomingCallerNumber(currentCallInfo)
-                setMessage(callerNumber ? `incoming call from ${callerNumber}` : 'incoming call')
+                setMessage('incoming call')
             }
             if (currentCallInfo && currentCallInfo._wasConnected) {
                 const peerNumber = getConnectedPeerNumber(currentCallInfo)
