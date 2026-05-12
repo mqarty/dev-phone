@@ -66,6 +66,12 @@ function CallStatusBar() {
     const isConnected = !!currentCallInfo._wasConnected;
     const callSids = getCallSids(currentCallInfo);
 
+    const customParams = (() => {
+        const cp = currentCallInfo.customParameters;
+        if (!cp || typeof cp.entries !== 'function') return [];
+        return Array.from(cp.entries());
+    })();
+
     let statusLabel;
     let displayNumber;
     if (isConnected) {
@@ -133,6 +139,24 @@ function CallStatusBar() {
                     </Flex>
                 ))}
             </Flex>
+            {customParams.length > 0 && (
+                <Flex vAlignContent="center" columnGap="space50" flexWrap="wrap" rowGap="space20" marginTop="space30">
+                    {customParams.map(([key, value]) => (
+                        <Flex key={key} vAlignContent="center" columnGap="space20">
+                            <Text as="span" fontSize="fontSize20" fontWeight="fontWeightSemibold" color="colorTextWeak">
+                                {key}:
+                            </Text>
+                            <Text as="span" fontSize="fontSize20" color="colorTextWeak">
+                                {value}
+                            </Text>
+                            <Button variant="secondary_icon" size="reset" onClick={() => copyValue(value, key)}>
+                                <ScreenReaderOnly>Copy {key}</ScreenReaderOnly>
+                                <CopyIcon decorative={false} title={`Copy ${key}`} />
+                            </Button>
+                        </Flex>
+                    ))}
+                </Flex>
+            )}
             {showToast && (
                 <>
                     <style>{`

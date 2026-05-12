@@ -6,7 +6,11 @@ exports.handler = function(context, event, callback) {
     const dial = twiml.dial({answerOnBridge: true});
     const client = dial.client();
     client.identity(context.DEV_PHONE_NAME);
-    client.parameter({name: 'ParentCallSid', value: event.CallSid});
+    Object.entries(event).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+            client.parameter({name: key, value: String(value)});
+        }
+    });
 
     return callback(null, twiml);
 };
