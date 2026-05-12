@@ -12,11 +12,11 @@ concurrency:
 
 jobs:
   release:
-    name: Changesets Release
+    name: Version and Publish
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write
 
     steps:
       - name: Checkout
@@ -34,15 +34,25 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Create release PR or publish
-        uses: changesets/action@v1
-        with:
-          version: npx changeset version
-          publish: npx changeset publish
-          title: "chore: release packages"
-          commit: "chore: release packages"
+      - name: Set git user
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Version packages
+        run: npx changeset version
+
+      - name: Commit version updates
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git add .
+            git commit -m "chore: release packages [skip ci]"
+            git push origin HEAD:main
+          else
+            echo "No version changes to commit"
+          fi
+
+      - name: Publish packages to npm
+        run: npx changeset publish
         env:
-          # Use a PAT when Actions is not allowed to create PRs with GITHUB_TOKEN.
-          # Create RELEASE_PLEASE_TOKEN (classic or fine-grained) with contents + pull_requests write.
-          GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN != '' && secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
