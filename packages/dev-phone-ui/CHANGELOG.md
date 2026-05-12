@@ -1,5 +1,15 @@
 # @twilio-labs/dev-phone-ui
 
+## 1.0.0-beta.4
+
+### Major Changes
+
+- 56be14f: Test
+
+### Patch Changes
+
+- 5d9783e: Improve call UX by showing caller numbers in incoming and connected states, add copy actions with toast feedback, and change incoming call controls to Answer/Decline before connection.
+
 ## 1.0.0-beta.3
 
 ### Patch Changes

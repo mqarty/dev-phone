@@ -1,5 +1,17 @@
 # @twilio-labs/plugin-dev-phone
 
+## 1.0.0-beta.7
+
+### Major Changes
+
+- 56be14f: Test
+
+### Patch Changes
+
+- Updated dependencies [5d9783e]
+- Updated dependencies [56be14f]
+  - @mqarty/dev-phone-ui@1.0.0-beta.4
+
 ## 1.0.0-beta.6
 
 ### Minor Changes
