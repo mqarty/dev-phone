@@ -35,10 +35,10 @@ function getCallSids(call) {
         ? call.customParameters.get('ParentCallSid') || null
         : null;
     const candidates = [
-        { label: 'Params SID',  value: call.parameters?.CallSid || call.parameters?.callSid || null },
-        { label: 'SDK SID',     value: call._callSid || null },
+        { label: 'Params SID', value: call.parameters?.CallSid || call.parameters?.callSid || null },
+        { label: 'SDK SID', value: call._callSid || null },
         { label: 'Options SID', value: call._options?.callSid || null },
-        { label: 'Parent SID',  value: parentSid },
+        { label: 'Parent SID', value: parentSid },
     ];
     const seen = new Set();
     return candidates.filter(({ value }) => {
