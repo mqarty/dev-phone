@@ -4,7 +4,9 @@ exports.handler = function(context, event, callback) {
     let twiml = new Twilio.twiml.VoiceResponse();
 
     const dial = twiml.dial({answerOnBridge: true});
-    dial.client(context.DEV_PHONE_NAME);
+    const client = dial.client();
+    client.identity(context.DEV_PHONE_NAME);
+    client.parameter({name: 'ParentCallSid', value: event.CallSid});
 
     return callback(null, twiml);
 };
