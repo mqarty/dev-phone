@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
+import { SyncClient } from "twilio-sync";
 import { Alert, Box, Button, Flex, ScreenReaderOnly, Text } from "@twilio-paste/core";
 import { CopyIcon } from "@twilio-paste/icons/esm/CopyIcon";
+
+const DEV_PHONE_BRIDGE_MAP = "DevPhoneCallBridge";
 
 function getIncomingCallerNumber(call) {
     if (!call) return null;
@@ -30,26 +33,21 @@ function getConnectedPeerNumber(call) {
 }
 
 const CUSTOM_PARAM_DENY_LIST = new Set([
-    'request', 'CallToken', 'CallSid', 'ParentCallSid', 'Direction', 'CallStatus',
-    'To', 'From', 'Called', 'Caller',
-    'ToState', 'ToZip', 'ToCountry', 'ToCity',
-    'CallerCountry', 'CallerState', 'CallerZip', 'CallerCity',
-    'CalledCountry', 'CalledState', 'CalledZip', 'CalledCity',
-    'FromState', 'FromZip', 'FromCountry', 'FromCity',
-    'StirVerstat', 'ApiVersion', 'AccountSid',
+    'request', 'CallToken',
 ]);
 
-function getCallSids(call) {
+function getCallSids(call, voiceCoreSid = null) {
     if (!call) return [];
     const cp = call.customParameters && typeof call.customParameters.get === 'function'
         ? call.customParameters
         : null;
     const candidates = [
-        { label: 'Params SID',  value: call.parameters?.CallSid || call.parameters?.callSid || null },
-        { label: 'SDK SID',     value: call._callSid || null },
-        { label: 'Options SID', value: call._options?.callSid || null },
-        { label: 'Inbound SID', value: cp?.get('CallSid') || null },
-        { label: 'Parent SID',  value: cp?.get('ParentCallSid') || null },
+        { label: 'Voice Core SID', value: voiceCoreSid },
+        { label: 'Params SID',     value: call.parameters?.CallSid || call.parameters?.callSid || null },
+        { label: 'SDK SID',        value: call._callSid || null },
+        { label: 'Options SID',    value: call._options?.callSid || null },
+        { label: 'Inbound SID',    value: cp?.get('CallSid') || null },
+        { label: 'Parent SID',     value: cp?.get('ParentCallSid') || null },
     ];
     const seen = new Set();
     return candidates.filter(({ value }) => {
@@ -61,21 +59,58 @@ function getCallSids(call) {
 
 function CallStatusBar() {
     const currentCallInfo = useSelector((state) => state.currentCallInfo);
+    const twilioAccessToken = useSelector((state) => state.twilioAccessToken);
     const [toastMessage, setToastMessage] = useState('');
     const [showToast, setShowToast] = useState(false);
+    const [voiceCoreSid, setVoiceCoreSid] = useState(null);
     const toastTimeoutRef = useRef(null);
+    const syncClientRef = useRef(null);
 
     useEffect(() => {
         return () => {
             if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+            if (syncClientRef.current) syncClientRef.current.shutdown();
         };
     }, []);
 
-    if (!currentCallInfo) return null;
+    useEffect(() => {
+        if (!currentCallInfo || !twilioAccessToken) return;
+
+        const callerNumber = currentCallInfo._direction === 'INCOMING'
+            ? (currentCallInfo.parameters?.From || currentCallInfo.parameters?.from)
+            : null;
+
+        if (!callerNumber) return;
+
+        let cancelled = false;
+
+        async function fetchVoiceCoreSid() {
+            try {
+                if (!syncClientRef.current) {
+                    syncClientRef.current = new SyncClient(twilioAccessToken);
+                }
+                const map = await syncClientRef.current.map(DEV_PHONE_BRIDGE_MAP);
+                const item = await map.get(callerNumber);
+                if (!cancelled && item?.data?.voice_core_sid) {
+                    setVoiceCoreSid(item.data.voice_core_sid);
+                }
+            } catch (e) {
+                // Bridge map entry not present yet — no-op
+            }
+        }
+
+        fetchVoiceCoreSid();
+        return () => { cancelled = true; };
+    }, [currentCallInfo, twilioAccessToken]);
+
+    if (!currentCallInfo) {
+        if (voiceCoreSid) setVoiceCoreSid(null);
+        return null;
+    }
 
     const isIncoming = currentCallInfo._direction === 'INCOMING';
     const isConnected = !!currentCallInfo._wasConnected;
-    const callSids = getCallSids(currentCallInfo);
+    const callSids = getCallSids(currentCallInfo, voiceCoreSid);
 
     const customParams = (() => {
         const cp = currentCallInfo.customParameters;
