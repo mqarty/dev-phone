@@ -6,6 +6,7 @@ import Header from "../Header/Header"
 import PhoneNumberPicker from "../PhoneNumberPicker/PhoneNumberPicker";
 import DevDisclaimer from "../DevDisclaimer/DevDisclaimer";
 import Softphone from "../Softphone/Softphone"
+import CallStatusBar from "../CallStatusBar/CallStatusBar"
 
 import { Box, Column, Grid, Flex } from "@twilio-paste/core";
 import Footer from "../Footer/Footer";
@@ -36,6 +37,7 @@ function App() {
     <Box width={"100vw"} minHeight={"100vh"} backgroundColor={"colorBackground"}>
       <Header devPhoneName={channelData.devPhoneName} numberInUse={numberInUse} />
       <DevDisclaimer />
+      <CallStatusBar />
       {numberInUse ? (
         <Softphone numberInUse={numberInUse} />
       ) : (
