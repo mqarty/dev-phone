@@ -46,7 +46,7 @@ function App() {
           `}</style>
           <Box
             width="100%"
-            height="3px"
+            height="11px"
             style={{
               background: 'linear-gradient(90deg, #c8e6fa, #0263e0, #004099, #0263e0, #c8e6fa)',
               backgroundSize: '200% 100%',
