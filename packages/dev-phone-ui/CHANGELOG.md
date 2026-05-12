@@ -1,5 +1,11 @@
 # @twilio-labs/dev-phone-ui
 
+## 1.0.0-beta.6
+
+### Major Changes
+
+- 5037218: move toast
+
 ## 1.0.0-beta.5
 
 ### Major Changes

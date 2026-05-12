@@ -1,5 +1,16 @@
 # @twilio-labs/plugin-dev-phone
 
+## 1.0.0-beta.9
+
+### Major Changes
+
+- 5037218: move toast
+
+### Patch Changes
+
+- Updated dependencies [5037218]
+  - @mqarty/dev-phone-ui@1.0.0-beta.6
+
 ## 1.0.0-beta.8
 
 ### Major Changes
