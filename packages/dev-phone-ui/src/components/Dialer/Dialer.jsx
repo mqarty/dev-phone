@@ -109,13 +109,6 @@ function Dialer() {
         <Box width="100%" paddingTop="space60">
             <Stack orientation="vertical" spacing="space60">
                 <Box width="100%">
-                    {showCopyToast && (
-                        <Box marginBottom="space40">
-                            <Alert variant="neutral">
-                                Copied caller number to clipboard
-                            </Alert>
-                        </Box>
-                    )}
                     <Flex>
                         <Flex grow hAlignContent={"center"}>
                             <CallStatusMessage voiceDevice={voiceDevice} currentCallInfo={currentCallInfo} />
@@ -191,6 +184,13 @@ function Dialer() {
                             </Button>}
                         </Column>
                     </Grid>
+                    {showCopyToast && (
+                        <Box marginTop="space40">
+                            <Alert variant="neutral">
+                                Copied caller number to clipboard
+                            </Alert>
+                        </Box>
+                    )}
                 </Box>
             </Stack>
         </Box>
