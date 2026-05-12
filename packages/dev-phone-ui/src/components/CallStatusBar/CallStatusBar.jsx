@@ -30,10 +30,11 @@ function getConnectedPeerNumber(call) {
 }
 
 const CUSTOM_PARAM_DENY_LIST = new Set([
-    'request', 'CallToken', 'CallSid', 'Direction',
+    'request', 'CallToken', 'CallSid', 'ParentCallSid', 'Direction', 'CallStatus',
     'To', 'From', 'Called', 'Caller',
     'ToState', 'ToZip', 'ToCountry', 'ToCity',
     'CallerCountry', 'CallerState', 'CallerZip', 'CallerCity',
+    'CalledCountry', 'CalledState', 'CalledZip', 'CalledCity',
     'FromState', 'FromZip', 'FromCountry', 'FromCity',
     'StirVerstat', 'ApiVersion', 'AccountSid',
 ]);
@@ -44,10 +45,11 @@ function getCallSids(call) {
         ? call.customParameters
         : null;
     const candidates = [
-        { label: 'Params SID', value: call.parameters?.CallSid || call.parameters?.callSid || null },
-        { label: 'SDK SID', value: call._callSid || null },
+        { label: 'Params SID',  value: call.parameters?.CallSid || call.parameters?.callSid || null },
+        { label: 'SDK SID',     value: call._callSid || null },
         { label: 'Options SID', value: call._options?.callSid || null },
-        { label: 'Parent SID', value: cp?.get('CallSid') || cp?.get('ParentCallSid') || null },
+        { label: 'Inbound SID', value: cp?.get('CallSid') || null },
+        { label: 'Parent SID',  value: cp?.get('ParentCallSid') || null },
     ];
     const seen = new Set();
     return candidates.filter(({ value }) => {
