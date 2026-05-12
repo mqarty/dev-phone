@@ -31,10 +31,14 @@ function getConnectedPeerNumber(call) {
 
 function getCallSids(call) {
     if (!call) return [];
+    const parentSid = call.customParameters && typeof call.customParameters.get === 'function'
+        ? call.customParameters.get('ParentCallSid') || null
+        : null;
     const candidates = [
-        { label: 'Params SID', value: call.parameters?.CallSid || call.parameters?.callSid || null },
-        { label: 'SDK SID', value: call._callSid || null },
+        { label: 'Params SID',  value: call.parameters?.CallSid || call.parameters?.callSid || null },
+        { label: 'SDK SID',     value: call._callSid || null },
         { label: 'Options SID', value: call._options?.callSid || null },
+        { label: 'Parent SID',  value: parentSid },
     ];
     const seen = new Set();
     return candidates.filter(({ value }) => {
@@ -99,7 +103,7 @@ function CallStatusBar() {
             borderBottomWidth="borderWidth10"
             borderBottomColor="colorBorderInfoWeak"
         >
-            <Flex vAlignContent="center" columnGap="space50" flexWrap="wrap" rowGap="space20">
+            <Flex vAlignContent="center" columnGap="space80" flexWrap="wrap" rowGap="space30">
                 <Flex vAlignContent="center" columnGap="space20">
                     <Text as="span" fontWeight="fontWeightSemibold" fontSize="fontSize20">
                         {statusLabel}:
