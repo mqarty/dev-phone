@@ -41,15 +41,29 @@ function getConnectedPeerNumber(call) {
     return getIncomingCallerNumber(call);
 }
 
+function getCallSid(call) {
+    if (!call) {
+        return null;
+    }
+
+    return call.parameters?.CallSid
+        || call.parameters?.callSid
+        || call._options?.callSid
+        || call._callSid
+        || null;
+}
+
 function CallStatusMessage({ voiceDevice, currentCallInfo }) {
     const [message, setMessage] = useState('initializing')
     const [statusColor, setStatusColor] = useState('colorBackgroundBusy')
     const [showCopyToast, setShowCopyToast] = useState(false)
+    const [copyToastMessage, setCopyToastMessage] = useState('Copied to clipboard')
     const copyToastTimeoutRef = useRef(null)
 
     const connectedPeerNumber = currentCallInfo && currentCallInfo._wasConnected
         ? getConnectedPeerNumber(currentCallInfo)
         : null;
+    const callSid = currentCallInfo ? getCallSid(currentCallInfo) : null;
 
     useEffect(() => {
         return () => {
@@ -59,7 +73,8 @@ function CallStatusMessage({ voiceDevice, currentCallInfo }) {
         }
     }, [])
 
-    function showCopiedToast() {
+    function showCopiedToast(toastMessage) {
+        setCopyToastMessage(toastMessage)
         setShowCopyToast(true)
         if (copyToastTimeoutRef.current) {
             clearTimeout(copyToastTimeoutRef.current)
@@ -73,7 +88,17 @@ function CallStatusMessage({ voiceDevice, currentCallInfo }) {
         }
 
         navigator.clipboard.writeText(connectedPeerNumber)
-            .then(showCopiedToast)
+            .then(() => showCopiedToast('Copied connected number to clipboard'))
+            .catch(() => { })
+    }
+
+    function copyCallSid() {
+        if (!callSid || typeof navigator === 'undefined' || !navigator.clipboard?.writeText) {
+            return;
+        }
+
+        navigator.clipboard.writeText(callSid)
+            .then(() => showCopiedToast('Copied call SID to clipboard'))
             .catch(() => { })
     }
 
@@ -114,12 +139,23 @@ function CallStatusMessage({ voiceDevice, currentCallInfo }) {
                                 </Button>
                             )}
                         </Flex>
+                        {callSid && (
+                            <Flex marginTop="space20" vAlignContent="center" columnGap="space30">
+                                <Text as="p" fontSize="fontSize20" color="colorTextWeak">
+                                    SID: {callSid}
+                                </Text>
+                                <Button variant="secondary_icon" size="reset" onClick={copyCallSid}>
+                                    <ScreenReaderOnly>Copy call SID</ScreenReaderOnly>
+                                    <CopyIcon decorative={false} title="Copy call SID" />
+                                </Button>
+                            </Flex>
+                        )}
                     </MediaBody>
                 </MediaObject>
             </Flex>
             {showCopyToast && (
                 <Box marginTop="space30">
-                    <Alert variant="neutral">Copied connected number to clipboard</Alert>
+                    <Alert variant="neutral">{copyToastMessage}</Alert>
                 </Box>
             )}
         </Box>
