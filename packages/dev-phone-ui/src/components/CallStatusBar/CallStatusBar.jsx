@@ -103,18 +103,18 @@ function CallStatusBar() {
         <Box
             width="100%"
             backgroundColor="colorBackgroundInfo"
-            paddingY="space30"
+            paddingY="space50"
             paddingX="space60"
             borderBottomStyle="solid"
             borderBottomWidth="borderWidth10"
             borderBottomColor="colorBorderInfoWeak"
         >
-            <Flex vAlignContent="center" columnGap="space80" flexWrap="wrap" rowGap="space30">
-                <Flex vAlignContent="center" columnGap="space20">
-                    <Text as="span" fontWeight="fontWeightSemibold" fontSize="fontSize20">
+            <Flex vAlignContent="center" columnGap="space80" flexWrap="wrap" rowGap="space40">
+                <Flex vAlignContent="center" columnGap="space30">
+                    <Text as="span" fontWeight="fontWeightSemibold" fontSize="fontSize40">
                         {statusLabel}:
                     </Text>
-                    <Text as="span" fontSize="fontSize20">
+                    <Text as="span" fontSize="fontSize40">
                         {displayNumber || 'Unknown'}
                     </Text>
                     {displayNumber && (
@@ -125,11 +125,11 @@ function CallStatusBar() {
                     )}
                 </Flex>
                 {callSids.map(({ label, value }) => (
-                    <Flex key={label} vAlignContent="center" columnGap="space20">
-                        <Text as="span" fontSize="fontSize20" fontWeight="fontWeightSemibold" color="colorTextWeak">
+                    <Flex key={label} vAlignContent="center" columnGap="space30">
+                        <Text as="span" fontSize="fontSize30" fontWeight="fontWeightSemibold" color="colorTextWeak">
                             {label}:
                         </Text>
-                        <Text as="span" fontSize="fontSize20" color="colorTextWeak">
+                        <Text as="span" fontSize="fontSize30" color="colorTextWeak">
                             {value}
                         </Text>
                         <Button variant="secondary_icon" size="reset" onClick={() => copyValue(value, label)}>
@@ -140,13 +140,13 @@ function CallStatusBar() {
                 ))}
             </Flex>
             {customParams.length > 0 && (
-                <Flex vAlignContent="center" columnGap="space50" flexWrap="wrap" rowGap="space20" marginTop="space30">
+                <Flex vAlignContent="center" columnGap="space60" flexWrap="wrap" rowGap="space40" marginTop="space50">
                     {customParams.map(([key, value]) => (
-                        <Flex key={key} vAlignContent="center" columnGap="space20">
-                            <Text as="span" fontSize="fontSize20" fontWeight="fontWeightSemibold" color="colorTextWeak">
+                        <Flex key={key} vAlignContent="center" columnGap="space30">
+                            <Text as="span" fontSize="fontSize30" fontWeight="fontWeightSemibold" color="colorTextWeak">
                                 {key}:
                             </Text>
-                            <Text as="span" fontSize="fontSize20" color="colorTextWeak">
+                            <Text as="span" fontSize="fontSize30" color="colorTextWeak">
                                 {value}
                             </Text>
                             <Button variant="secondary_icon" size="reset" onClick={() => copyValue(value, key)}>
