@@ -1,5 +1,16 @@
 # @twilio-labs/plugin-dev-phone
 
+## 1.0.0-beta.17
+
+### Minor Changes
+
+- 97c6219: Call Componenent Added
+
+### Patch Changes
+
+- Updated dependencies [97c6219]
+  - @mqarty/dev-phone-ui@1.0.0-beta.14
+
 ## 1.0.0-beta.16
 
 ### Minor Changes
