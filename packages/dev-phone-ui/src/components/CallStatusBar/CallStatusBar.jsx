@@ -29,13 +29,19 @@ function getConnectedPeerNumber(call) {
     return getIncomingCallerNumber(call);
 }
 
-function getCallSid(call) {
-    if (!call) return null;
-    return call.parameters?.CallSid
-        || call.parameters?.callSid
-        || call._options?.callSid
-        || call._callSid
-        || null;
+function getCallSids(call) {
+    if (!call) return [];
+    const candidates = [
+        { label: 'Params SID', value: call.parameters?.CallSid || call.parameters?.callSid || null },
+        { label: 'SDK SID', value: call._callSid || null },
+        { label: 'Options SID', value: call._options?.callSid || null },
+    ];
+    const seen = new Set();
+    return candidates.filter(({ value }) => {
+        if (!value || seen.has(value)) return false;
+        seen.add(value);
+        return true;
+    });
 }
 
 function CallStatusBar() {
@@ -54,7 +60,7 @@ function CallStatusBar() {
 
     const isIncoming = currentCallInfo._direction === 'INCOMING';
     const isConnected = !!currentCallInfo._wasConnected;
-    const callSid = getCallSid(currentCallInfo);
+    const callSids = getCallSids(currentCallInfo);
 
     let statusLabel;
     let displayNumber;
@@ -76,18 +82,11 @@ function CallStatusBar() {
         toastTimeoutRef.current = setTimeout(() => setShowToast(false), 2000);
     }
 
-    function copyNumber() {
-        if (!displayNumber || !navigator.clipboard?.writeText) return;
-        navigator.clipboard.writeText(displayNumber)
-            .then(() => showCopiedToast('Copied number to clipboard'))
-            .catch(() => {});
-    }
-
-    function copySid() {
-        if (!callSid || !navigator.clipboard?.writeText) return;
-        navigator.clipboard.writeText(callSid)
-            .then(() => showCopiedToast('Copied call SID to clipboard'))
-            .catch(() => {});
+    function copyValue(value, label) {
+        if (!value || !navigator.clipboard?.writeText) return;
+        navigator.clipboard.writeText(value)
+            .then(() => showCopiedToast(`Copied ${label} to clipboard`))
+            .catch(() => { });
     }
 
     return (
@@ -100,8 +99,8 @@ function CallStatusBar() {
             borderBottomWidth="borderWidth10"
             borderBottomColor="colorBorderInfoWeak"
         >
-            <Flex vAlignContent="center" columnGap="space50">
-                <Flex vAlignContent="center" columnGap="space20" grow>
+            <Flex vAlignContent="center" columnGap="space50" flexWrap="wrap" rowGap="space20">
+                <Flex vAlignContent="center" columnGap="space20">
                     <Text as="span" fontWeight="fontWeightSemibold" fontSize="fontSize20">
                         {statusLabel}:
                     </Text>
@@ -109,23 +108,26 @@ function CallStatusBar() {
                         {displayNumber || 'Unknown'}
                     </Text>
                     {displayNumber && (
-                        <Button variant="secondary_icon" size="reset" onClick={copyNumber}>
+                        <Button variant="secondary_icon" size="reset" onClick={() => copyValue(displayNumber, 'number')}>
                             <ScreenReaderOnly>Copy number</ScreenReaderOnly>
                             <CopyIcon decorative={false} title="Copy number" />
                         </Button>
                     )}
                 </Flex>
-                {callSid && (
-                    <Flex vAlignContent="center" columnGap="space20">
-                        <Text as="span" fontSize="fontSize20" color="colorTextWeak">
-                            SID: {callSid}
+                {callSids.map(({ label, value }) => (
+                    <Flex key={label} vAlignContent="center" columnGap="space20">
+                        <Text as="span" fontSize="fontSize20" fontWeight="fontWeightSemibold" color="colorTextWeak">
+                            {label}:
                         </Text>
-                        <Button variant="secondary_icon" size="reset" onClick={copySid}>
-                            <ScreenReaderOnly>Copy call SID</ScreenReaderOnly>
-                            <CopyIcon decorative={false} title="Copy call SID" />
+                        <Text as="span" fontSize="fontSize20" color="colorTextWeak">
+                            {value}
+                        </Text>
+                        <Button variant="secondary_icon" size="reset" onClick={() => copyValue(value, label)}>
+                            <ScreenReaderOnly>Copy {label}</ScreenReaderOnly>
+                            <CopyIcon decorative={false} title={`Copy ${label}`} />
                         </Button>
                     </Flex>
-                )}
+                ))}
             </Flex>
             {showToast && (
                 <>
