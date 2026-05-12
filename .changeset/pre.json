@@ -6,6 +6,7 @@
     "@mqarty/plugin-dev-phone": "1.0.0-beta.1"
   },
   "changesets": [
+    "brave-kiwis-stare",
     "late-tomatoes-grow",
     "metal-students-invite",
     "polite-ties-occur",
@@ -15,6 +16,7 @@
     "serious-mice-exist",
     "small-cameras-knock",
     "smooth-trains-shout",
+    "tender-snails-check",
     "three-avocados-return",
     "warm-bulldogs-boil"
   ]
