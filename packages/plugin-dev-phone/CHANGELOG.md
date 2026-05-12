@@ -1,5 +1,16 @@
 # @twilio-labs/plugin-dev-phone
 
+## 1.0.0-beta.8
+
+### Major Changes
+
+- 875c46e: call ui
+
+### Patch Changes
+
+- Updated dependencies [875c46e]
+  - @mqarty/dev-phone-ui@1.0.0-beta.5
+
 ## 1.0.0-beta.7
 
 ### Major Changes
