@@ -6,6 +6,7 @@
     "@mqarty/plugin-dev-phone": "1.0.0-beta.1"
   },
   "changesets": [
+    "answer-me-2",
     "answer-me",
     "brave-kiwis-stare",
     "brown-guests-float",
