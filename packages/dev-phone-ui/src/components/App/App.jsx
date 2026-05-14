@@ -9,7 +9,7 @@ import Softphone from "../Softphone/Softphone"
 import CallStatusBar from "../CallStatusBar/CallStatusBar"
 import TwilioVoiceManager from "../WebsocketManagers/VoiceManager";
 
-import { Box, Column, Grid, Flex } from "@twilio-paste/core";
+import { Box, Column, Grid } from "@twilio-paste/core";
 import Footer from "../Footer/Footer";
 
 const setupKonamiCode = (setNinetiesMode) => {
