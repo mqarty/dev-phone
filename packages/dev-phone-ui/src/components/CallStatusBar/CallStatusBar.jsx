@@ -115,11 +115,19 @@ function CallStatusBar() {
                     border-color: #f08a8a;
                 }
 
+                .callContactCard {
+                    background: rgba(255, 255, 255, 0.75);
+                    border: 1px solid rgba(2, 99, 224, 0.16);
+                    border-radius: 14px;
+                    box-shadow: 0 3px 10px rgba(15, 23, 42, 0.1);
+                    padding: 12px 14px;
+                }
+
                 .callActionGroup {
                     display: inline-flex;
                     flex-direction: column;
                     align-items: center;
-                    row-gap: 6px;
+                    row-gap: 9px;
                 }
 
                 .callActionLabel {
@@ -145,7 +153,7 @@ function CallStatusBar() {
                     }
                 }
             `}</style>
-            <Flex vAlignContent="center" columnGap="space30" wrap>
+            <Box className="callContactCard">
                 <Flex vAlignContent="center" columnGap="space30" wrap>
                     <Box
                         borderRadius="borderRadiusCircle"
@@ -177,9 +185,9 @@ function CallStatusBar() {
                         </Button>
                     )}
                 </Flex>
-            </Flex>
+            </Box>
             {(isIncomingCallRinging || canEndLiveCall) && (
-                <Flex hAlignContent="center" vAlignContent="center" columnGap="space100" marginTop="space50">
+                <Flex hAlignContent="center" vAlignContent="center" columnGap="space120" marginTop="space60">
                     {isIncomingCallRinging && (
                         <Box as="span" className="callActionGroup">
                             <Button variant="secondary_icon" size="reset" onClick={dialer.acceptCall}>
