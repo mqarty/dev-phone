@@ -1,5 +1,11 @@
 # @twilio-labs/dev-phone-ui
 
+## 1.0.0-beta.22
+
+### Minor Changes
+
+- d3c6bf2: Sub-header shows answer/decline icons with correct abilities.
+
 ## 1.0.0-beta.21
 
 ### Minor Changes
