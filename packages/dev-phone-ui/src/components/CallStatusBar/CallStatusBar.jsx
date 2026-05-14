@@ -1,7 +1,10 @@
-import { useRef, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { Alert, Box, Button, Flex, ScreenReaderOnly, Text } from "@twilio-paste/core";
 import { CopyIcon } from "@twilio-paste/icons/esm/CopyIcon";
+import { CallIncomingIcon } from "@twilio-paste/icons/esm/CallIncomingIcon";
+import { CallFailedIcon } from "@twilio-paste/icons/esm/CallFailedIcon";
+import { TwilioVoiceContext } from "../WebsocketManagers/VoiceManager";
 
 function getFromNumber(call) {
     if (!call) return null;
@@ -31,6 +34,7 @@ function getToNumber(call) {
 
 function CallStatusBar() {
     const currentCallInfo = useSelector((state) => state.currentCallInfo);
+    const dialer = useContext(TwilioVoiceContext);
     const [toastMessage, setToastMessage] = useState('');
     const [showToast, setShowToast] = useState(false);
     const toastTimeoutRef = useRef(null);
@@ -45,6 +49,9 @@ function CallStatusBar() {
 
     const toNumber = getToNumber(currentCallInfo);
     const fromNumber = getFromNumber(currentCallInfo);
+    const isIncomingCall = !!dialer?.acceptCall && currentCallInfo._direction === 'INCOMING';
+    const isIncomingCallRinging = isIncomingCall && currentCallInfo._mediaStatus !== "open";
+    const canEndLiveCall = !isIncomingCallRinging && !!dialer?.hangUp;
 
     function showCopiedToast(msg) {
         setToastMessage(msg);
@@ -70,36 +77,56 @@ function CallStatusBar() {
             borderBottomWidth="borderWidth10"
             borderBottomColor="colorBorderInfoWeak"
         >
-            <Flex vAlignContent="center" columnGap="space30" wrap>
-                <Box
-                    borderRadius="borderRadiusCircle"
-                    backgroundColor="colorBackgroundSuccess"
-                    style={{ width: '10px', height: '10px' }}
-                />
-                <Text as="span" fontWeight="fontWeightSemibold" fontSize="fontSize40">
-                    Connected to
-                </Text>
-                <Text as="span" fontSize="fontSize40">
-                    {toNumber || 'Unknown'}
-                </Text>
-                {toNumber && (
-                    <Button variant="secondary_icon" size="reset" onClick={() => copyValue(toNumber, 'to number')}>
-                        <ScreenReaderOnly>Copy connected number</ScreenReaderOnly>
-                        <CopyIcon decorative={false} title="Copy connected number" />
-                    </Button>
-                )}
-                <Text as="span" fontWeight="fontWeightSemibold" fontSize="fontSize40">
-                    from
-                </Text>
-                <Text as="span" fontSize="fontSize40">
-                    {fromNumber || 'Unknown'}
-                </Text>
-                {fromNumber && (
-                    <Button variant="secondary_icon" size="reset" onClick={() => copyValue(fromNumber, 'from number')}>
-                        <ScreenReaderOnly>Copy source number</ScreenReaderOnly>
-                        <CopyIcon decorative={false} title="Copy source number" />
-                    </Button>
-                )}
+            <Flex vAlignContent="center" hAlignContent="between" wrap>
+                <Flex vAlignContent="center" columnGap="space30" wrap>
+                    <Box
+                        borderRadius="borderRadiusCircle"
+                        backgroundColor="colorBackgroundSuccess"
+                        style={{ width: '10px', height: '10px' }}
+                    />
+                    <Text as="span" fontWeight="fontWeightSemibold" fontSize="fontSize40">
+                        Connected to
+                    </Text>
+                    <Text as="span" fontSize="fontSize40">
+                        {toNumber || 'Unknown'}
+                    </Text>
+                    {toNumber && (
+                        <Button variant="secondary_icon" size="reset" onClick={() => copyValue(toNumber, 'to number')}>
+                            <ScreenReaderOnly>Copy connected number</ScreenReaderOnly>
+                            <CopyIcon decorative={false} title="Copy connected number" />
+                        </Button>
+                    )}
+                    <Text as="span" fontWeight="fontWeightSemibold" fontSize="fontSize40">
+                        from
+                    </Text>
+                    <Text as="span" fontSize="fontSize40">
+                        {fromNumber || 'Unknown'}
+                    </Text>
+                    {fromNumber && (
+                        <Button variant="secondary_icon" size="reset" onClick={() => copyValue(fromNumber, 'from number')}>
+                            <ScreenReaderOnly>Copy source number</ScreenReaderOnly>
+                            <CopyIcon decorative={false} title="Copy source number" />
+                        </Button>
+                    )}
+                </Flex>
+                <Flex vAlignContent="center" columnGap="space20">
+                    {isIncomingCallRinging && (
+                        <Button variant="secondary_icon" size="reset" onClick={dialer.acceptCall}>
+                            <ScreenReaderOnly>Answer call</ScreenReaderOnly>
+                            <CallIncomingIcon decorative={false} title="Answer call" />
+                        </Button>
+                    )}
+                    {(isIncomingCallRinging || canEndLiveCall) && (
+                        <Button
+                            variant="secondary_icon"
+                            size="reset"
+                            onClick={isIncomingCallRinging ? dialer.declineCall : dialer.hangUp}
+                        >
+                            <ScreenReaderOnly>{isIncomingCallRinging ? 'Decline call' : 'Hang up call'}</ScreenReaderOnly>
+                            <CallFailedIcon decorative={false} title={isIncomingCallRinging ? 'Decline call' : 'Hang up call'} />
+                        </Button>
+                    )}
+                </Flex>
             </Flex>
             {showToast && (
                 <>

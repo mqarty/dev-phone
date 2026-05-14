@@ -7,8 +7,9 @@ import PhoneNumberPicker from "../PhoneNumberPicker/PhoneNumberPicker";
 import DevDisclaimer from "../DevDisclaimer/DevDisclaimer";
 import Softphone from "../Softphone/Softphone"
 import CallStatusBar from "../CallStatusBar/CallStatusBar"
+import TwilioVoiceManager from "../WebsocketManagers/VoiceManager";
 
-import { Box, Column, Grid, Flex } from "@twilio-paste/core";
+import { Box, Column, Grid } from "@twilio-paste/core";
 import Footer from "../Footer/Footer";
 
 const setupKonamiCode = (setNinetiesMode) => {
@@ -55,16 +56,22 @@ function App() {
           />
         </>
       )}
-      <DevDisclaimer />
-      <CallStatusBar />
       {numberInUse ? (
-        <Softphone numberInUse={numberInUse} />
+        <TwilioVoiceManager>
+          <DevDisclaimer />
+          <CallStatusBar />
+          <Softphone numberInUse={numberInUse} />
+        </TwilioVoiceManager>
       ) : (
-        <Grid gutter="space30">
-          <Column span={6} offset={3}>
-            <PhoneNumberPicker configureNumberInUse={(number) => dispatch(configureNumberInUse(number))} />
-          </Column>
-        </Grid>
+        <>
+          <DevDisclaimer />
+          <CallStatusBar />
+          <Grid gutter="space30">
+            <Column span={6} offset={3}>
+              <PhoneNumberPicker configureNumberInUse={(number) => dispatch(configureNumberInUse(number))} />
+            </Column>
+          </Grid>
+        </>
       )}
       <Footer />
     </Box>
