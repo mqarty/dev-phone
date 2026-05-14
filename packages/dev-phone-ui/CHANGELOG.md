@@ -1,5 +1,11 @@
 # @twilio-labs/dev-phone-ui
 
+## 1.0.0-beta.20
+
+### Minor Changes
+
+- ec5a4c0: Call Componenent Added
+
 ## 1.0.0-beta.19
 
 ### Minor Changes
