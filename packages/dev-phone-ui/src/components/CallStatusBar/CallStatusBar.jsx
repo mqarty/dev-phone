@@ -32,6 +32,12 @@ function getToNumber(call) {
         || null;
 }
 
+function getClientIdentity(value) {
+    if (!value || typeof value !== 'string') return null;
+    if (!value.startsWith('client:')) return null;
+    return value.slice('client:'.length);
+}
+
 function CallStatusBar() {
     const currentCallInfo = useSelector((state) => state.currentCallInfo);
     const dialer = useContext(TwilioVoiceContext);
@@ -49,6 +55,8 @@ function CallStatusBar() {
 
     const toNumber = getToNumber(currentCallInfo);
     const fromNumber = getFromNumber(currentCallInfo);
+    const toClientIdentity = getClientIdentity(toNumber);
+    const isConnected = currentCallInfo._mediaStatus === 'open' || !!currentCallInfo._wasConnected;
     const isIncomingCall = !!dialer?.acceptCall && currentCallInfo._direction === 'INCOMING';
     const isIncomingCallRinging = isIncomingCall && currentCallInfo._mediaStatus !== "open";
     const canEndLiveCall = !isIncomingCallRinging && !!dialer?.hangUp;
@@ -123,6 +131,55 @@ function CallStatusBar() {
                     padding: 12px 14px;
                 }
 
+                .callConnectionHeader {
+                    display: flex;
+                    align-items: center;
+                    column-gap: 10px;
+                    padding-bottom: 10px;
+                    margin-bottom: 10px;
+                    border-bottom: 1px solid rgba(2, 99, 224, 0.14);
+                }
+
+                .callConnectionGrid {
+                    display: grid;
+                    row-gap: 10px;
+                }
+
+                .callConnectionRow {
+                    display: grid;
+                    grid-template-columns: minmax(45px, auto) 1fr auto;
+                    align-items: center;
+                    column-gap: 10px;
+                    padding: 8px 10px;
+                    border: 1px solid rgba(15, 23, 42, 0.08);
+                    border-radius: 10px;
+                    background: rgba(255, 255, 255, 0.72);
+                }
+
+                .callConnectionValue {
+                    display: inline-flex;
+                    align-items: center;
+                    flex-wrap: wrap;
+                    gap: 6px;
+                    min-width: 0;
+                    word-break: break-word;
+                }
+
+                .callCopyButton {
+                    min-width: 64px;
+                }
+
+                @media (max-width: 680px) {
+                    .callConnectionRow {
+                        grid-template-columns: minmax(45px, auto) 1fr;
+                    }
+
+                    .callCopyButton {
+                        grid-column: 1 / -1;
+                        justify-self: start;
+                    }
+                }
+
                 .callActionGroup {
                     display: inline-flex;
                     flex-direction: column;
@@ -154,37 +211,71 @@ function CallStatusBar() {
                 }
             `}</style>
             <Box className="callContactCard">
-                <Flex vAlignContent="center" columnGap="space30" wrap>
+                <Box className="callConnectionHeader">
                     <Box
                         borderRadius="borderRadiusCircle"
-                        backgroundColor="colorBackgroundSuccess"
+                        backgroundColor={isConnected ? "colorBackgroundSuccess" : "colorBackgroundWarning"}
                         style={{ width: '10px', height: '10px' }}
                     />
                     <Text as="span" fontWeight="fontWeightSemibold" fontSize="fontSize40">
-                        Connected to
+                        {isConnected ? 'Connected:' : 'Connecting...'}
                     </Text>
-                    <Text as="span" fontSize="fontSize40">
-                        {toNumber || 'Unknown'}
-                    </Text>
-                    {toNumber && (
-                        <Button variant="secondary_icon" size="reset" onClick={() => copyValue(toNumber, 'to number')}>
-                            <ScreenReaderOnly>Copy connected number</ScreenReaderOnly>
-                            <CopyIcon decorative={false} title="Copy connected number" />
-                        </Button>
-                    )}
-                    <Text as="span" fontWeight="fontWeightSemibold" fontSize="fontSize40">
-                        from
-                    </Text>
-                    <Text as="span" fontSize="fontSize40">
-                        {fromNumber || 'Unknown'}
-                    </Text>
-                    {fromNumber && (
-                        <Button variant="secondary_icon" size="reset" onClick={() => copyValue(fromNumber, 'from number')}>
-                            <ScreenReaderOnly>Copy source number</ScreenReaderOnly>
-                            <CopyIcon decorative={false} title="Copy source number" />
-                        </Button>
-                    )}
-                </Flex>
+                </Box>
+                <Box className="callConnectionGrid">
+                    <Box className="callConnectionRow">
+                        <Text as="span" fontWeight="fontWeightSemibold" fontSize="fontSize30">
+                            To:
+                        </Text>
+                        <Box className="callConnectionValue">
+                            {toClientIdentity && (
+                                <Text as="span" fontSize="fontSize30" fontWeight="fontWeightSemibold">
+                                    {toClientIdentity}
+                                </Text>
+                            )}
+                            <Text as="span" fontSize="fontSize30" color="colorTextWeak">
+                                {toNumber || 'Unknown'}
+                            </Text>
+                        </Box>
+                        {toNumber && (
+                            <Button
+                                variant="secondary"
+                                size="small"
+                                className="callCopyButton"
+                                onClick={() => copyValue(toNumber, 'destination value')}
+                            >
+                                <ScreenReaderOnly>Copy connected number</ScreenReaderOnly>
+                                <Box as="span" display="inline-flex" alignItems="center" columnGap="space20">
+                                    <CopyIcon decorative={false} title="Copy connected number" />
+                                    <Text as="span" fontSize="fontSize20">Copy</Text>
+                                </Box>
+                            </Button>
+                        )}
+                    </Box>
+                    <Box className="callConnectionRow">
+                        <Text as="span" fontWeight="fontWeightSemibold" fontSize="fontSize30">
+                            From:
+                        </Text>
+                        <Box className="callConnectionValue">
+                            <Text as="span" fontSize="fontSize30" color="colorTextWeak">
+                                {fromNumber || 'Unknown'}
+                            </Text>
+                        </Box>
+                        {fromNumber && (
+                            <Button
+                                variant="secondary"
+                                size="small"
+                                className="callCopyButton"
+                                onClick={() => copyValue(fromNumber, 'source number')}
+                            >
+                                <ScreenReaderOnly>Copy source number</ScreenReaderOnly>
+                                <Box as="span" display="inline-flex" alignItems="center" columnGap="space20">
+                                    <CopyIcon decorative={false} title="Copy source number" />
+                                    <Text as="span" fontSize="fontSize20">Copy</Text>
+                                </Box>
+                            </Button>
+                        )}
+                    </Box>
+                </Box>
             </Box>
             {(isIncomingCallRinging || canEndLiveCall) && (
                 <Flex hAlignContent="center" vAlignContent="center" columnGap="space120" marginTop="space60">
