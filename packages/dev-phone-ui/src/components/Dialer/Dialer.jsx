@@ -14,7 +14,6 @@ function Dialer() {
     const dispatch = useDispatch();
 
     const dialer = useContext(TwilioVoiceContext)
-    const { acceptCall, declineCall } = dialer
 
     const hasValidDestinationNumber = useMemo(() => {
         return destinationNumber && destinationNumber.length > 6
@@ -22,14 +21,6 @@ function Dialer() {
 
     function makeCall() {
         dialer.makeCall(destinationNumber)
-    }
-
-    function hangUp() {
-        dialer.hangUp()
-    }
-
-    function declineIncomingCall() {
-        declineCall()
     }
 
     function toggleMute() {
@@ -55,8 +46,6 @@ function Dialer() {
     }
 
     const isCallInProgress = !!currentCallInfo;
-    const isIncomingCall = acceptCall && currentCallInfo && currentCallInfo._direction === 'INCOMING';
-    const isIncomingCallRinging = isIncomingCall && currentCallInfo._mediaStatus !== "open";
 
     return (
         <Box width="100%" paddingTop="space60">
@@ -85,37 +74,12 @@ function Dialer() {
                         {generateDTMFColumn(['*', '0', '#'])}
                     </Flex>
                     <Grid spacing="space30" gutter="space30" marginBottom="space40">
-                        <Column span={isIncomingCallRinging ? 6 : !isCallInProgress ? 12 : 0}>
-                            {isIncomingCallRinging ?
-                                <Button
-                                    fullWidth={true}
-                                    disabled={false}
-                                    onClick={acceptCall}
-                                    variant="primary" >
-                                    Answer
-                                </Button>
-                                : isCallInProgress ? null : <Button
-                                    fullWidth={true}
-                                    disabled={!!currentCallInfo || !hasValidDestinationNumber}
-                                    onClick={makeCall} >
-                                    Call
-                                </Button>
-                            }
-                        </Column>
-                        <Column span={isIncomingCallRinging ? 6 : (isCallInProgress ? 12 : 0)}>
-                            {isIncomingCallRinging && <Button
+                        <Column span={!isCallInProgress ? 12 : 0}>
+                            {!isCallInProgress && <Button
                                 fullWidth={true}
-                                disabled={!currentCallInfo}
-                                onClick={declineIncomingCall}
-                                variant="destructive" >
-                                Decline
-                            </Button>}
-                            {isCallInProgress && !isIncomingCallRinging && <Button
-                                fullWidth={true}
-                                disabled={!currentCallInfo}
-                                onClick={hangUp}
-                                variant="destructive" >
-                                Hang up
+                                disabled={!!currentCallInfo || !hasValidDestinationNumber}
+                                onClick={makeCall} >
+                                Call
                             </Button>}
                         </Column>
                     </Grid>
