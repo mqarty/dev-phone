@@ -118,7 +118,13 @@ function Header({ devPhoneName, numberInUse }) {
                 </Column>
             </Grid>
             {showCopyToast && (
-                <Box marginTop="space40">
+                <Box
+                    position="fixed"
+                    bottom="space70"
+                    right="space70"
+                    boxShadow="shadowCard"
+                    style={{ zIndex: 9999, minWidth: '240px' }}
+                >
                     <Alert variant="neutral">
                         Copied Twilio number to clipboard
                     </Alert>

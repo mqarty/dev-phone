@@ -228,9 +228,8 @@ function CallStatusBar() {
                         position="fixed"
                         bottom="space70"
                         right="space70"
-                        zIndex="zIndex90"
                         boxShadow="shadowCard"
-                        style={{ animation: 'toastFadeOut 2s ease-in forwards', minWidth: '240px' }}
+                        style={{ animation: 'toastFadeOut 2s ease-in forwards', minWidth: '240px', zIndex: 9999 }}
                     >
                         <Alert variant="neutral">{toastMessage}</Alert>
                     </Box>
