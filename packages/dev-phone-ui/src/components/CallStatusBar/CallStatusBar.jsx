@@ -77,7 +77,75 @@ function CallStatusBar() {
             borderBottomWidth="borderWidth10"
             borderBottomColor="colorBorderInfoWeak"
         >
-            <Flex vAlignContent="center" hAlignContent="between" wrap>
+            <style>{`
+                .callActionButton {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 58px;
+                    height: 58px;
+                    border-radius: 9999px;
+                    border: 1px solid transparent;
+                    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
+                    transition: transform 140ms ease, box-shadow 140ms ease, filter 140ms ease;
+                }
+
+                .callActionButton:hover {
+                    transform: translateY(-1px);
+                    filter: brightness(1.03);
+                    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.24);
+                }
+
+                .callActionButton:active {
+                    transform: translateY(0);
+                }
+
+                .callActionButton:focus-visible {
+                    outline: 2px solid rgba(2, 99, 224, 0.45);
+                    outline-offset: 3px;
+                }
+
+                .callActionAnswer {
+                    background: #e9fcef;
+                    border-color: #7ccf8a;
+                }
+
+                .callActionEnd {
+                    background: #ffe9e9;
+                    border-color: #f08a8a;
+                }
+
+                .callActionGroup {
+                    display: inline-flex;
+                    flex-direction: column;
+                    align-items: center;
+                    row-gap: 6px;
+                }
+
+                .callActionLabel {
+                    font-size: 11px;
+                    font-weight: 600;
+                    letter-spacing: 0.02em;
+                    opacity: 0;
+                    transform: translateY(-2px);
+                    transition: opacity 140ms ease, transform 140ms ease;
+                    user-select: none;
+                }
+
+                .callActionGroup:hover .callActionLabel,
+                .callActionGroup:focus-within .callActionLabel {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+
+                @media (min-width: 900px) {
+                    .callActionLabel {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+            `}</style>
+            <Flex vAlignContent="center" columnGap="space30" wrap>
                 <Flex vAlignContent="center" columnGap="space30" wrap>
                     <Box
                         borderRadius="borderRadiusCircle"
@@ -109,25 +177,45 @@ function CallStatusBar() {
                         </Button>
                     )}
                 </Flex>
-                <Flex vAlignContent="center" columnGap="space20">
+            </Flex>
+            {(isIncomingCallRinging || canEndLiveCall) && (
+                <Flex hAlignContent="center" vAlignContent="center" columnGap="space100" marginTop="space50">
                     {isIncomingCallRinging && (
-                        <Button variant="secondary_icon" size="reset" onClick={dialer.acceptCall}>
-                            <ScreenReaderOnly>Answer call</ScreenReaderOnly>
-                            <CallIncomingIcon decorative={false} title="Answer call" />
-                        </Button>
+                        <Box as="span" className="callActionGroup">
+                            <Button variant="secondary_icon" size="reset" onClick={dialer.acceptCall}>
+                                <ScreenReaderOnly>Answer call</ScreenReaderOnly>
+                                <Box as="span" className="callActionButton callActionAnswer" color="colorTextSuccess">
+                                    <CallIncomingIcon decorative={false} title="Answer call" size="sizeIcon70" />
+                                </Box>
+                            </Button>
+                            <Text as="span" className="callActionLabel" color="colorTextSuccess">
+                                Answer
+                            </Text>
+                        </Box>
                     )}
                     {(isIncomingCallRinging || canEndLiveCall) && (
-                        <Button
-                            variant="secondary_icon"
-                            size="reset"
-                            onClick={isIncomingCallRinging ? dialer.declineCall : dialer.hangUp}
-                        >
-                            <ScreenReaderOnly>{isIncomingCallRinging ? 'Decline call' : 'Hang up call'}</ScreenReaderOnly>
-                            <CallFailedIcon decorative={false} title={isIncomingCallRinging ? 'Decline call' : 'Hang up call'} />
-                        </Button>
+                        <Box as="span" className="callActionGroup">
+                            <Button
+                                variant="secondary_icon"
+                                size="reset"
+                                onClick={isIncomingCallRinging ? dialer.declineCall : dialer.hangUp}
+                            >
+                                <ScreenReaderOnly>{isIncomingCallRinging ? 'Decline call' : 'Hang up call'}</ScreenReaderOnly>
+                                <Box as="span" className="callActionButton callActionEnd" color="colorTextError">
+                                    <CallFailedIcon
+                                        decorative={false}
+                                        title={isIncomingCallRinging ? 'Decline call' : 'Hang up call'}
+                                        size="sizeIcon70"
+                                    />
+                                </Box>
+                            </Button>
+                            <Text as="span" className="callActionLabel" color="colorTextError">
+                                {isIncomingCallRinging ? 'Decline' : 'End'}
+                            </Text>
+                        </Box>
                     )}
                 </Flex>
-            </Flex>
+            )}
             {showToast && (
                 <>
                     <style>{`
