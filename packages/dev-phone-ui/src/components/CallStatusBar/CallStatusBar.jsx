@@ -1,4 +1,4 @@
-import { useContext, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { Alert, Box, Button, Flex, ScreenReaderOnly, Text } from "@twilio-paste/core";
 import { CopyIcon } from "@twilio-paste/icons/esm/CopyIcon";
@@ -38,28 +38,185 @@ function getClientIdentity(value) {
     return value.slice('client:'.length);
 }
 
+function getIncomingCallerNumber(call) {
+    if (!call) return null;
+    const customFrom = call.customParameters && typeof call.customParameters.get === 'function'
+        ? call.customParameters.get('From') || call.customParameters.get('from')
+        : null;
+
+    return call.parameters?.From
+        || call.parameters?.from
+        || call._options?.twimlParams?.from
+        || customFrom
+        || null;
+}
+
+function getOutgoingDestinationNumber(call) {
+    if (!call) return null;
+
+    return call._options?.twimlParams?.to
+        || call.parameters?.To
+        || call.parameters?.to
+        || null;
+}
+
+function getConnectedPeerNumber(call) {
+    if (!call) return null;
+    if (call._direction === 'OUTGOING') return getOutgoingDestinationNumber(call);
+    return getIncomingCallerNumber(call);
+}
+
+function getCallSid(call) {
+    if (!call) return null;
+
+    return call.parameters?.CallSid
+        || call.parameters?.callSid
+        || call._options?.callSid
+        || call._callSid
+        || null;
+}
+
+function formatDuration(totalMs) {
+    if (!totalMs || totalMs < 1000) return '0:00';
+
+    const totalSeconds = Math.floor(totalMs / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${String(seconds).padStart(2, '0')}`;
+}
+
+function extractPhoneNumber(value) {
+    if (!value || typeof value !== 'string') return null;
+
+    const normalized = value.trim();
+    // Keep copy behavior strict: only allow E.164-like values (optionally wrapped in common separators).
+    const match = normalized.match(/\+\d[\d\s().-]{6,}\d/);
+    if (!match) return null;
+
+    const digitsOnly = match[0].replace(/[^\d+]/g, '');
+    return digitsOnly.startsWith('+') ? digitsOnly : `+${digitsOnly}`;
+}
+
 function CallStatusBar() {
     const currentCallInfo = useSelector((state) => state.currentCallInfo);
     const dialer = useContext(TwilioVoiceContext);
     const [toastMessage, setToastMessage] = useState('');
     const [showToast, setShowToast] = useState(false);
+    const [lastCallInfo, setLastCallInfo] = useState(null);
+    const [callSessionMeta, setCallSessionMeta] = useState({
+        callSid: null,
+        startedAt: null,
+        connectedAt: null,
+        endedAt: null,
+        direction: null,
+        lastConnectedPeerNumber: null,
+    });
     const toastTimeoutRef = useRef(null);
+    const isLiveCall = !!currentCallInfo;
+    const displayCallInfo = currentCallInfo || lastCallInfo;
 
-    if (!currentCallInfo) {
-        if (toastTimeoutRef.current) {
-            clearTimeout(toastTimeoutRef.current);
-            toastTimeoutRef.current = null;
+    useEffect(() => {
+        return () => {
+            if (toastTimeoutRef.current) {
+                clearTimeout(toastTimeoutRef.current);
+                toastTimeoutRef.current = null;
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!currentCallInfo) {
+            setCallSessionMeta((prev) => {
+                if (!prev.startedAt || prev.endedAt) return prev;
+                return { ...prev, endedAt: Date.now() };
+            });
+            return;
         }
+
+        setLastCallInfo(currentCallInfo);
+
+        const activeCallSid = getCallSid(currentCallInfo);
+        const isConnectedNow = currentCallInfo._mediaStatus === 'open' || !!currentCallInfo._wasConnected;
+        const connectedPeerPhone = extractPhoneNumber(getConnectedPeerNumber(currentCallInfo));
+        setCallSessionMeta((prev) => {
+            const now = Date.now();
+            const isNewSession = !prev.startedAt
+                || !!prev.endedAt
+                || (activeCallSid && prev.callSid && prev.callSid !== activeCallSid);
+
+            const base = isNewSession
+                ? {
+                    callSid: activeCallSid || null,
+                    startedAt: now,
+                    connectedAt: null,
+                    endedAt: null,
+                    direction: currentCallInfo._direction || null,
+                    lastConnectedPeerNumber: connectedPeerPhone,
+                }
+                : {
+                    ...prev,
+                    callSid: activeCallSid || prev.callSid,
+                    endedAt: null,
+                    direction: currentCallInfo._direction || prev.direction,
+                };
+
+            const connectedAt = isConnectedNow ? (base.connectedAt || now) : base.connectedAt;
+            const lastConnectedPeerNumber = connectedPeerPhone || base.lastConnectedPeerNumber;
+
+            if (
+                prev.callSid === base.callSid
+                && prev.startedAt === base.startedAt
+                && prev.connectedAt === connectedAt
+                && prev.endedAt === base.endedAt
+                && prev.direction === base.direction
+                && prev.lastConnectedPeerNumber === lastConnectedPeerNumber
+            ) {
+                return prev;
+            }
+
+            return {
+                ...base,
+                connectedAt,
+                lastConnectedPeerNumber,
+            };
+        });
+    }, [currentCallInfo]);
+
+    if (!displayCallInfo) {
         return null;
     }
 
-    const toNumber = getToNumber(currentCallInfo);
-    const fromNumber = getFromNumber(currentCallInfo);
+    const toNumber = getToNumber(displayCallInfo);
+    const fromNumber = getFromNumber(displayCallInfo);
     const toClientIdentity = getClientIdentity(toNumber);
-    const isConnected = currentCallInfo._mediaStatus === 'open' || !!currentCallInfo._wasConnected;
-    const isIncomingCall = !!dialer?.acceptCall && currentCallInfo._direction === 'INCOMING';
+    const isConnected = isLiveCall && (currentCallInfo._mediaStatus === 'open' || !!currentCallInfo._wasConnected);
+    const connectedPeerNumber = isConnected ? getConnectedPeerNumber(displayCallInfo) : null;
+    const toPhoneValue = extractPhoneNumber(connectedPeerNumber)
+        || callSessionMeta.lastConnectedPeerNumber
+        || extractPhoneNumber(toNumber)
+        || toNumber
+        || null;
+    const toCopyValue = extractPhoneNumber(toPhoneValue) || extractPhoneNumber(toNumber);
+    const fromCopyValue = extractPhoneNumber(fromNumber);
+    const isIncomingCall = !!currentCallInfo && !!dialer?.acceptCall && currentCallInfo._direction === 'INCOMING';
     const isIncomingCallRinging = isIncomingCall && currentCallInfo._mediaStatus !== "open";
-    const canEndLiveCall = !isIncomingCallRinging && !!dialer?.hangUp;
+    const canEndLiveCall = !!currentCallInfo && !isIncomingCallRinging && !!dialer?.hangUp;
+    const directionLabel = (displayCallInfo._direction || callSessionMeta.direction) === 'INCOMING'
+        ? 'Incoming'
+        : (displayCallInfo._direction || callSessionMeta.direction) === 'OUTGOING'
+            ? 'Outgoing'
+            : null;
+    const durationStart = callSessionMeta.connectedAt || callSessionMeta.startedAt;
+    const durationEnd = callSessionMeta.endedAt || (isLiveCall ? Date.now() : null);
+    const durationLabel = durationStart && durationEnd
+        ? formatDuration(Math.max(durationEnd - durationStart, 0))
+        : null;
+    const activityLabel = isLiveCall
+        ? (isConnected ? 'Live' : 'Ringing')
+        : 'Ended';
+    const statsSummary = [activityLabel, directionLabel, durationLabel ? `Duration ${durationLabel}` : null]
+        .filter(Boolean)
+        .join(' • ');
 
     function showCopiedToast(msg) {
         setToastMessage(msg);
@@ -124,25 +281,30 @@ function CallStatusBar() {
                 }
 
                 .callContactCard {
-                    background: rgba(255, 255, 255, 0.75);
-                    border: 1px solid rgba(2, 99, 224, 0.16);
+                    background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.86));
+                    border: 1px solid rgba(2, 99, 224, 0.24);
                     border-radius: 14px;
-                    box-shadow: 0 3px 10px rgba(15, 23, 42, 0.1);
-                    padding: 12px 14px;
+                    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
+                    padding: 14px 16px;
                 }
 
                 .callConnectionHeader {
                     display: flex;
                     align-items: center;
                     column-gap: 10px;
-                    padding-bottom: 10px;
-                    margin-bottom: 10px;
-                    border-bottom: 1px solid rgba(2, 99, 224, 0.14);
+                    padding-bottom: 12px;
+                    margin-bottom: 12px;
+                    border-bottom: 1px solid rgba(2, 99, 224, 0.2);
+                }
+
+                .callConnectionMeta {
+                    display: block;
+                    margin-top: 2px;
                 }
 
                 .callConnectionGrid {
                     display: grid;
-                    row-gap: 10px;
+                    row-gap: 12px;
                 }
 
                 .callConnectionRow {
@@ -150,10 +312,10 @@ function CallStatusBar() {
                     grid-template-columns: minmax(45px, auto) 1fr auto;
                     align-items: center;
                     column-gap: 10px;
-                    padding: 8px 10px;
-                    border: 1px solid rgba(15, 23, 42, 0.08);
+                    padding: 10px 12px;
+                    border: 1px solid rgba(15, 23, 42, 0.12);
                     border-radius: 10px;
-                    background: rgba(255, 255, 255, 0.72);
+                    background: rgba(255, 255, 255, 0.9);
                 }
 
                 .callConnectionValue {
@@ -214,12 +376,17 @@ function CallStatusBar() {
                 <Box className="callConnectionHeader">
                     <Box
                         borderRadius="borderRadiusCircle"
-                        backgroundColor={isConnected ? "colorBackgroundSuccess" : "colorBackgroundWarning"}
+                        backgroundColor={isConnected ? "colorBackgroundSuccess" : (isLiveCall ? "colorBackgroundWarning" : "colorBackground")}
                         style={{ width: '10px', height: '10px' }}
                     />
-                    <Text as="span" fontWeight="fontWeightSemibold" fontSize="fontSize40">
-                        {isConnected ? 'Connected:' : 'Connecting...'}
-                    </Text>
+                    <Box>
+                        <Text as="span" fontWeight="fontWeightSemibold" fontSize="fontSize40">
+                            {isLiveCall ? (isConnected ? 'Connected:' : 'Connecting...') : 'Last call:'}
+                        </Text>
+                        <Text as="span" fontSize="fontSize20" color="colorTextWeak" className="callConnectionMeta">
+                            {statsSummary}
+                        </Text>
+                    </Box>
                 </Box>
                 <Box className="callConnectionGrid">
                     <Box className="callConnectionRow">
@@ -233,15 +400,15 @@ function CallStatusBar() {
                                 </Text>
                             )}
                             <Text as="span" fontSize="fontSize30" color="colorTextWeak">
-                                {toNumber || 'Unknown'}
+                                {toPhoneValue || 'Unknown'}
                             </Text>
                         </Box>
-                        {toNumber && (
+                        {toCopyValue && (
                             <Button
                                 variant="secondary"
                                 size="small"
                                 className="callCopyButton"
-                                onClick={() => copyValue(toNumber, 'destination value')}
+                                onClick={() => copyValue(toCopyValue, 'destination number')}
                             >
                                 <ScreenReaderOnly>Copy connected number</ScreenReaderOnly>
                                 <Box as="span" display="inline-flex" alignItems="center" columnGap="space20">
@@ -260,12 +427,12 @@ function CallStatusBar() {
                                 {fromNumber || 'Unknown'}
                             </Text>
                         </Box>
-                        {fromNumber && (
+                        {fromCopyValue && (
                             <Button
                                 variant="secondary"
                                 size="small"
                                 className="callCopyButton"
-                                onClick={() => copyValue(fromNumber, 'source number')}
+                                onClick={() => copyValue(fromCopyValue, 'source number')}
                             >
                                 <ScreenReaderOnly>Copy source number</ScreenReaderOnly>
                                 <Box as="span" display="inline-flex" alignItems="center" columnGap="space20">
