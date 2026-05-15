@@ -99,6 +99,7 @@ function extractPhoneNumber(value) {
 
 function CallStatusBar() {
     const currentCallInfo = useSelector((state) => state.currentCallInfo);
+    const devPhoneNumber = useSelector((state) => state.numberInUse?.phoneNumber || null);
     const dialer = useContext(TwilioVoiceContext);
     const [toastMessage, setToastMessage] = useState('');
     const [showToast, setShowToast] = useState(false);
@@ -189,21 +190,29 @@ function CallStatusBar() {
     const toNumber = getToNumber(displayCallInfo);
     const fromNumber = getFromNumber(displayCallInfo);
     const toClientIdentity = getClientIdentity(toNumber);
+    const callDirection = displayCallInfo._direction || callSessionMeta.direction;
+    const isIncomingDirection = callDirection === 'INCOMING';
     const isConnected = isLiveCall && (currentCallInfo._mediaStatus === 'open' || !!currentCallInfo._wasConnected);
     const connectedPeerNumber = isConnected ? getConnectedPeerNumber(displayCallInfo) : null;
-    const toPhoneValue = extractPhoneNumber(connectedPeerNumber)
+    const incomingToPhoneValue = extractPhoneNumber(toNumber)
+        || extractPhoneNumber(devPhoneNumber)
+        || devPhoneNumber
+        || toNumber
+        || null;
+    const outgoingToPhoneValue = extractPhoneNumber(connectedPeerNumber)
         || callSessionMeta.lastConnectedPeerNumber
         || extractPhoneNumber(toNumber)
         || toNumber
         || null;
+    const toPhoneValue = isIncomingDirection ? incomingToPhoneValue : outgoingToPhoneValue;
     const toCopyValue = extractPhoneNumber(toPhoneValue) || extractPhoneNumber(toNumber);
     const fromCopyValue = extractPhoneNumber(fromNumber);
     const isIncomingCall = !!currentCallInfo && !!dialer?.acceptCall && currentCallInfo._direction === 'INCOMING';
     const isIncomingCallRinging = isIncomingCall && currentCallInfo._mediaStatus !== "open";
     const canEndLiveCall = !!currentCallInfo && !isIncomingCallRinging && !!dialer?.hangUp;
-    const directionLabel = (displayCallInfo._direction || callSessionMeta.direction) === 'INCOMING'
+    const directionLabel = callDirection === 'INCOMING'
         ? 'Incoming'
-        : (displayCallInfo._direction || callSessionMeta.direction) === 'OUTGOING'
+        : callDirection === 'OUTGOING'
             ? 'Outgoing'
             : null;
     const durationStart = callSessionMeta.connectedAt || callSessionMeta.startedAt;
