@@ -2,10 +2,7 @@ import React, { useCallback, useState, useEffect, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { Device } from '@twilio/voice-sdk'
 import {
-<<<<<<< HEAD
     addDebugEvent,
-=======
->>>>>>> f4159d148e928e1c1d073ebc81280c379b7e51d9
     updateCallInformation,
     updateMuteStatus,
     updateVoiceDeviceError,
@@ -48,10 +45,7 @@ const TwilioVoiceManager = ({ children }) => {
         try {
             if (!voiceDevice.current) {
                 console.warn('Voice device is not ready yet; cannot place call.');
-<<<<<<< HEAD
                 logDebugEvent('warn', 'Attempted outbound call while device was not ready');
-=======
->>>>>>> f4159d148e928e1c1d073ebc81280c379b7e51d9
                 return;
             }
             const call = await voiceDevice.current.connect({
@@ -131,24 +125,18 @@ const TwilioVoiceManager = ({ children }) => {
             })
 
             activeCall.on('cancel', call => {
-<<<<<<< HEAD
                 logDebugEvent('warn', 'Call canceled', {
                     sid: call?.parameters?.CallSid || call?._callSid || null,
                 });
-=======
->>>>>>> f4159d148e928e1c1d073ebc81280c379b7e51d9
                 call.removeAllListeners()
                 setActiveCall(null)
                 updateCallInfo(null)
             })
 
             activeCall.on('reject', call => {
-<<<<<<< HEAD
                 logDebugEvent('warn', 'Call rejected', {
                     sid: call?.parameters?.CallSid || call?._callSid || null,
                 });
-=======
->>>>>>> f4159d148e928e1c1d073ebc81280c379b7e51d9
                 call.removeAllListeners()
                 setActiveCall(null)
                 updateCallInfo(null)
@@ -156,13 +144,10 @@ const TwilioVoiceManager = ({ children }) => {
 
             activeCall.on('error', (error) => {
                 console.error('Active call error', error)
-<<<<<<< HEAD
                 logDebugEvent('error', 'Active call error', {
                     message: error?.message || 'Unknown call error',
                     code: error?.code || null,
                 });
-=======
->>>>>>> f4159d148e928e1c1d073ebc81280c379b7e51d9
             })
 
             activeCall.on('mute', isMuted => {
@@ -170,20 +155,14 @@ const TwilioVoiceManager = ({ children }) => {
                 updateIsMutedStatus(isMuted);
             })
         }
-<<<<<<< HEAD
     }, [activeCall, logDebugEvent, updateCallInfo, updateIsMutedStatus])
-=======
-    }, [activeCall, updateCallInfo, updateIsMutedStatus])
->>>>>>> f4159d148e928e1c1d073ebc81280c379b7e51d9
+}, [activeCall, logDebugEvent, updateCallInfo, updateIsMutedStatus])
 
     useEffect(() => {
         if (!twilioAccessToken) {
             dispatch(updateVoiceDeviceStatus('disconnected'));
             dispatch(updateVoiceDeviceError(null));
-<<<<<<< HEAD
             logDebugEvent('warn', 'Voice device disconnected: missing access token');
-=======
->>>>>>> f4159d148e928e1c1d073ebc81280c379b7e51d9
             return;
         }
 
@@ -210,30 +189,21 @@ const TwilioVoiceManager = ({ children }) => {
             console.log("Registered voice device")
             dispatch(updateVoiceDeviceStatus('registered'));
             dispatch(updateVoiceDeviceError(null));
-<<<<<<< HEAD
             logDebugEvent('info', 'Voice device registered');
-=======
->>>>>>> f4159d148e928e1c1d073ebc81280c379b7e51d9
         })
 
         device.on("unregistered", () => {
             console.warn("Voice device became unregistered")
             dispatch(updateVoiceDeviceStatus('unregistered'));
-<<<<<<< HEAD
             logDebugEvent('warn', 'Voice device unregistered');
-=======
->>>>>>> f4159d148e928e1c1d073ebc81280c379b7e51d9
         })
 
         device.on("incoming", (call) => {
             console.log('Incoming call received', call?.parameters?.CallSid || call?._callSid)
-<<<<<<< HEAD
             logDebugEvent('info', 'Incoming call received', {
                 sid: call?.parameters?.CallSid || call?._callSid || null,
                 from: call?.parameters?.From || call?.parameters?.from || null,
             });
-=======
->>>>>>> f4159d148e928e1c1d073ebc81280c379b7e51d9
             setActiveCall(call)
         })
 
@@ -245,23 +215,17 @@ const TwilioVoiceManager = ({ children }) => {
                 message: error?.message || 'Unknown voice device error',
                 causes: Array.isArray(error?.causes) ? error.causes : [],
             }));
-<<<<<<< HEAD
             logDebugEvent('error', 'Voice device error', {
                 message: error?.message || 'Unknown voice device error',
                 code: error?.code || null,
             });
-=======
->>>>>>> f4159d148e928e1c1d073ebc81280c379b7e51d9
         })
 
         device.on("registering", () => {
             console.log("Registering voice device")
             dispatch(updateVoiceDeviceStatus('registering'));
             dispatch(updateVoiceDeviceError(null));
-<<<<<<< HEAD
             logDebugEvent('info', 'Voice device registering');
-=======
->>>>>>> f4159d148e928e1c1d073ebc81280c379b7e51d9
         })
 
         device.register()
@@ -288,32 +252,28 @@ const TwilioVoiceManager = ({ children }) => {
                 voiceDevice.current = null;
             }
             dispatch(updateVoiceDeviceStatus('disconnected'));
-<<<<<<< HEAD
             logDebugEvent('info', 'Voice device destroyed');
         }
-    }, [dispatch, logDebugEvent, twilioAccessToken, updateCallInfo])
-=======
-        }
-    }, [dispatch, twilioAccessToken, updateCallInfo])
->>>>>>> f4159d148e928e1c1d073ebc81280c379b7e51d9
-
-    if (!deviceDetails.current.voiceDevice) {
-        deviceDetails.current = {
-            voiceDevice: voiceDevice,
-            hangUp: () => { },
-            declineCall: () => { },
-            sendDTMF: () => { },
-            updateCallInfo,
-            makeCall,
-            toggleMute: () => { }
-        }
     }
+    }, [dispatch, logDebugEvent, twilioAccessToken, updateCallInfo])
 
-    return (
-        <TwilioVoiceContext.Provider value={deviceDetails.current}>
-            {children}
-        </TwilioVoiceContext.Provider>
-    )
+if (!deviceDetails.current.voiceDevice) {
+    deviceDetails.current = {
+        voiceDevice: voiceDevice,
+        hangUp: () => { },
+        declineCall: () => { },
+        sendDTMF: () => { },
+        updateCallInfo,
+        makeCall,
+        toggleMute: () => { }
+    }
+}
+
+return (
+    <TwilioVoiceContext.Provider value={deviceDetails.current}>
+        {children}
+    </TwilioVoiceContext.Provider>
+)
 
 };
 
