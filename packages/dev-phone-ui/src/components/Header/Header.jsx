@@ -3,10 +3,21 @@ import { Alert, Anchor, Box, Column, Grid, Flex, Text, MediaFigure, MediaBody, M
 import { LogoTwilioIcon } from '@twilio-paste/icons/esm/LogoTwilioIcon';
 import { InformationIcon } from "@twilio-paste/icons/esm/InformationIcon";
 import { CopyIcon } from "@twilio-paste/icons/esm/CopyIcon";
+import { useSelector } from 'react-redux';
 
 function Header({ devPhoneName, numberInUse }) {
     const [showCopyToast, setShowCopyToast] = useState(false);
     const copyToastTimeoutRef = useRef(null);
+    const voiceDeviceStatus = useSelector((state) => state.voiceDeviceStatus || 'disconnected');
+
+    const statusConfig = {
+        registered: { label: 'Voice Active', color: '#22c55e', bg: 'rgba(34, 197, 94, 0.18)' },
+        registering: { label: 'Voice Connecting', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.22)' },
+        unregistered: { label: 'Voice Inactive', color: '#f97316', bg: 'rgba(249, 115, 22, 0.20)' },
+        error: { label: 'Voice Error', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.20)' },
+        disconnected: { label: 'Voice Offline', color: '#94a3b8', bg: 'rgba(148, 163, 184, 0.20)' },
+    };
+    const currentStatus = statusConfig[voiceDeviceStatus] || statusConfig.disconnected;
 
     useEffect(() => {
         return () => {
@@ -87,6 +98,39 @@ function Header({ devPhoneName, numberInUse }) {
                                 <Anchor href="javascript:void" variant="inverse">
                                     <InformationIcon decorative={false} title="Show details about Dev Phone ID" display="block" />
                                 </Anchor>
+                            </Tooltip>
+                            <Tooltip text="Real-time browser voice registration status.">
+                                <Box
+                                    as="span"
+                                    marginLeft="space40"
+                                    paddingX="space30"
+                                    paddingY="space10"
+                                    borderRadius="borderRadius20"
+                                    style={{
+                                        backgroundColor: currentStatus.bg,
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                    }}
+                                >
+                                    <Box
+                                        as="span"
+                                        borderRadius="borderRadiusCircle"
+                                        style={{
+                                            width: '8px',
+                                            height: '8px',
+                                            backgroundColor: currentStatus.color,
+                                        }}
+                                    />
+                                    <Text
+                                        as="span"
+                                        fontSize="fontSize10"
+                                        fontWeight="fontWeightSemibold"
+                                        color="colorTextInverse"
+                                    >
+                                        {currentStatus.label}
+                                    </Text>
+                                </Box>
                             </Tooltip>
                         </Flex>
                     </Flex>

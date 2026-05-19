@@ -1,7 +1,11 @@
 import React, { useCallback, useState, useEffect, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { Device } from '@twilio/voice-sdk'
-import { updateCallInformation, updateMuteStatus } from '../../actions'
+import {
+    updateCallInformation,
+    updateMuteStatus,
+    updateVoiceDeviceStatus,
+} from '../../actions'
 
 const QUIETER_INCOMING_RINGTONE_URL = 'https://sdk.twilio.com/js/client/sounds/releases/1.0.0/outgoing.mp3'
 
@@ -114,6 +118,7 @@ const TwilioVoiceManager = ({ children }) => {
 
     useEffect(() => {
         if (!twilioAccessToken) {
+            dispatch(updateVoiceDeviceStatus('disconnected'));
             return;
         }
 
@@ -138,10 +143,12 @@ const TwilioVoiceManager = ({ children }) => {
 
         device.on("registered", () => {
             console.log("Registered voice device")
+            dispatch(updateVoiceDeviceStatus('registered'));
         })
 
         device.on("unregistered", () => {
             console.warn("Voice device became unregistered")
+            dispatch(updateVoiceDeviceStatus('unregistered'));
         })
 
         device.on("incoming", (call) => {
@@ -151,10 +158,12 @@ const TwilioVoiceManager = ({ children }) => {
 
         device.on("error", (error) => {
             console.error("Voice device error", error)
+            dispatch(updateVoiceDeviceStatus('error'));
         })
 
         device.on("registering", () => {
             console.log("Registering voice device")
+            dispatch(updateVoiceDeviceStatus('registering'));
         })
 
         device.register()
@@ -180,8 +189,9 @@ const TwilioVoiceManager = ({ children }) => {
             if (voiceDevice.current === device) {
                 voiceDevice.current = null;
             }
+            dispatch(updateVoiceDeviceStatus('disconnected'));
         }
-    }, [twilioAccessToken, updateCallInfo])
+    }, [dispatch, twilioAccessToken, updateCallInfo])
 
     if (!deviceDetails.current.voiceDevice) {
         deviceDetails.current = {

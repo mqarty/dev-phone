@@ -10,6 +10,7 @@ import {
     UPDATE_CALL_RECORD,
     UPDATE_CALL_INFORMATION,
     UPDATE_MUTE_STATUS,
+    UPDATE_VOICE_DEVICE_STATUS,
     SET_DESTINATION_NUMBER,
     ADD_DIGIT_TO_DESTINATION_NUMBER
 } from '../actions'
@@ -24,6 +25,7 @@ const initialState = {
         phoneNumber: '',
     },
     twilioAccessToken: '',
+    voiceDeviceStatus: 'disconnected',
     voiceDevice: {},
     error: {}
 }
@@ -39,7 +41,7 @@ export default function reducer(state = initialState, action) {
         case UPDATE_CALL_RECORD:
             return {
                 ...state,
-                callLog: state.callLog.map(call => { 
+                callLog: state.callLog.map(call => {
                     return call.Sid === action.payload.Sid ? action.payload : call
                 })
             }
@@ -63,6 +65,11 @@ export default function reducer(state = initialState, action) {
             return {
                 ...state,
                 isMuted: action.isMuted
+            }
+        case UPDATE_VOICE_DEVICE_STATUS:
+            return {
+                ...state,
+                voiceDeviceStatus: action.status
             }
         case ADD_DIGIT_TO_DESTINATION_NUMBER:
             return { ...state, destinationNumber: state.destinationNumber + action.digit }
