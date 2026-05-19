@@ -28,6 +28,10 @@ const TwilioVoiceManager = ({ children }) => {
     // responsible for making calls with Twilio Voice SDK
     const makeCall = async (destination) => {
         try {
+            if (!voiceDevice.current) {
+                console.warn('Voice device is not ready yet; cannot place call.');
+                return;
+            }
             const call = await voiceDevice.current.connect({
                 params: {
                     "to": destination,
@@ -82,17 +86,46 @@ const TwilioVoiceManager = ({ children }) => {
 
             activeCall.on('disconnect', call => {
                 call.removeAllListeners()
+                setActiveCall(null)
                 updateCallInfo(null)
+            })
+
+            activeCall.on('cancel', call => {
+                call.removeAllListeners()
+                setActiveCall(null)
+                updateCallInfo(null)
+            })
+
+            activeCall.on('reject', call => {
+                call.removeAllListeners()
+                setActiveCall(null)
+                updateCallInfo(null)
+            })
+
+            activeCall.on('error', (error) => {
+                console.error('Active call error', error)
             })
 
             activeCall.on('mute', isMuted => {
                 updateIsMutedStatus(isMuted);
             })
         }
-    }, [activeCall, updateCallInfo])
+    }, [activeCall, updateCallInfo, updateIsMutedStatus])
 
-    // Creates the Twilio Voice Device basis for this context
-    if (!voiceDevice.current) {
+    useEffect(() => {
+        if (!twilioAccessToken) {
+            return;
+        }
+
+        if (voiceDevice.current) {
+            try {
+                voiceDevice.current.destroy();
+            } catch (error) {
+                console.error('Failed to destroy existing voice device', error);
+            }
+            voiceDevice.current = null;
+        }
+
         const device = new Device(twilioAccessToken, {
             codecPreferences: ["opus", "pcmu"],
             fakeLocalDTMF: true,
@@ -103,19 +136,54 @@ const TwilioVoiceManager = ({ children }) => {
             }
         })
 
-
-        device.register()
-
         device.on("registered", () => {
             console.log("Registered voice device")
         })
 
+        device.on("unregistered", () => {
+            console.warn("Voice device became unregistered")
+        })
+
         device.on("incoming", (call) => {
+            console.log('Incoming call received', call?.parameters?.CallSid || call?._callSid)
             setActiveCall(call)
         })
 
+        device.on("error", (error) => {
+            console.error("Voice device error", error)
+        })
+
+        device.on("registering", () => {
+            console.log("Registering voice device")
+        })
+
+        device.register()
+
         voiceDevice.current = device
 
+        deviceDetails.current = {
+            voiceDevice: voiceDevice,
+            hangUp: () => { },
+            declineCall: () => { },
+            sendDTMF: () => { },
+            updateCallInfo,
+            makeCall,
+            toggleMute: () => { }
+        }
+
+        return () => {
+            try {
+                device.destroy();
+            } catch (error) {
+                console.error('Failed to clean up voice device', error);
+            }
+            if (voiceDevice.current === device) {
+                voiceDevice.current = null;
+            }
+        }
+    }, [twilioAccessToken, updateCallInfo])
+
+    if (!deviceDetails.current.voiceDevice) {
         deviceDetails.current = {
             voiceDevice: voiceDevice,
             hangUp: () => { },
