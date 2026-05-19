@@ -61,6 +61,15 @@ export function updateVoiceDeviceStatus(status) {
     }
 }
 
+export const UPDATE_VOICE_DEVICE_ERROR = "UPDATE_VOICE_DEVICE_ERROR";
+
+export function updateVoiceDeviceError(error) {
+    return {
+        type: UPDATE_VOICE_DEVICE_ERROR,
+        error
+    }
+}
+
 // Logic for communicating with the local backend
 export const DEV_PHONE_NUMBER_SELECTED = "DEV_PHONE_NUMBER_SELECTED"
 export const CONFIGURE_NUMBER_IN_USE = "CONFIGURE_NUMBER_IN_USE"

@@ -4,6 +4,7 @@ import { Device } from '@twilio/voice-sdk'
 import {
     updateCallInformation,
     updateMuteStatus,
+    updateVoiceDeviceError,
     updateVoiceDeviceStatus,
 } from '../../actions'
 
@@ -119,6 +120,7 @@ const TwilioVoiceManager = ({ children }) => {
     useEffect(() => {
         if (!twilioAccessToken) {
             dispatch(updateVoiceDeviceStatus('disconnected'));
+            dispatch(updateVoiceDeviceError(null));
             return;
         }
 
@@ -144,6 +146,7 @@ const TwilioVoiceManager = ({ children }) => {
         device.on("registered", () => {
             console.log("Registered voice device")
             dispatch(updateVoiceDeviceStatus('registered'));
+            dispatch(updateVoiceDeviceError(null));
         })
 
         device.on("unregistered", () => {
@@ -159,11 +162,17 @@ const TwilioVoiceManager = ({ children }) => {
         device.on("error", (error) => {
             console.error("Voice device error", error)
             dispatch(updateVoiceDeviceStatus('error'));
+            dispatch(updateVoiceDeviceError({
+                code: error?.code || null,
+                message: error?.message || 'Unknown voice device error',
+                causes: Array.isArray(error?.causes) ? error.causes : [],
+            }));
         })
 
         device.on("registering", () => {
             console.log("Registering voice device")
             dispatch(updateVoiceDeviceStatus('registering'));
+            dispatch(updateVoiceDeviceError(null));
         })
 
         device.register()
