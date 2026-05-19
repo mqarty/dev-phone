@@ -70,6 +70,22 @@ export function updateVoiceDeviceError(error) {
     }
 }
 
+export const ADD_DEBUG_EVENT = "ADD_DEBUG_EVENT";
+export const CLEAR_DEBUG_EVENTS = "CLEAR_DEBUG_EVENTS";
+
+export function addDebugEvent(event) {
+    return {
+        type: ADD_DEBUG_EVENT,
+        event,
+    }
+}
+
+export function clearDebugEvents() {
+    return {
+        type: CLEAR_DEBUG_EVENTS,
+    }
+}
+
 // Logic for communicating with the local backend
 export const DEV_PHONE_NUMBER_SELECTED = "DEV_PHONE_NUMBER_SELECTED"
 export const CONFIGURE_NUMBER_IN_USE = "CONFIGURE_NUMBER_IN_USE"

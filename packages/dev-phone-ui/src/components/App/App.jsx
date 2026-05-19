@@ -7,6 +7,7 @@ import PhoneNumberPicker from "../PhoneNumberPicker/PhoneNumberPicker";
 import DevDisclaimer from "../DevDisclaimer/DevDisclaimer";
 import Softphone from "../Softphone/Softphone"
 import CallStatusBar from "../CallStatusBar/CallStatusBar"
+import DebugConsole from "../DebugConsole/DebugConsole";
 import TwilioVoiceManager from "../WebsocketManagers/VoiceManager";
 
 import { Box, Column, Grid } from "@twilio-paste/core";
@@ -74,6 +75,7 @@ function App() {
         </>
       )}
       <Footer />
+      <DebugConsole />
     </Box>
   )
 }
