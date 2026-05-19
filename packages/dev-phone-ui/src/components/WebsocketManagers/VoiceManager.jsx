@@ -156,7 +156,6 @@ const TwilioVoiceManager = ({ children }) => {
             })
         }
     }, [activeCall, logDebugEvent, updateCallInfo, updateIsMutedStatus])
-}, [activeCall, logDebugEvent, updateCallInfo, updateIsMutedStatus])
 
     useEffect(() => {
         if (!twilioAccessToken) {
@@ -254,26 +253,25 @@ const TwilioVoiceManager = ({ children }) => {
             dispatch(updateVoiceDeviceStatus('disconnected'));
             logDebugEvent('info', 'Voice device destroyed');
         }
-    }
     }, [dispatch, logDebugEvent, twilioAccessToken, updateCallInfo])
 
-if (!deviceDetails.current.voiceDevice) {
-    deviceDetails.current = {
-        voiceDevice: voiceDevice,
-        hangUp: () => { },
-        declineCall: () => { },
-        sendDTMF: () => { },
-        updateCallInfo,
-        makeCall,
-        toggleMute: () => { }
+    if (!deviceDetails.current.voiceDevice) {
+        deviceDetails.current = {
+            voiceDevice: voiceDevice,
+            hangUp: () => { },
+            declineCall: () => { },
+            sendDTMF: () => { },
+            updateCallInfo,
+            makeCall,
+            toggleMute: () => { }
+        }
     }
-}
 
-return (
-    <TwilioVoiceContext.Provider value={deviceDetails.current}>
-        {children}
-    </TwilioVoiceContext.Provider>
-)
+    return (
+        <TwilioVoiceContext.Provider value={deviceDetails.current}>
+            {children}
+        </TwilioVoiceContext.Provider>
+    )
 
 };
 
