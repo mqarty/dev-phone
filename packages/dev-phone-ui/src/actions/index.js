@@ -85,7 +85,6 @@ export function clearDebugEvents() {
         type: CLEAR_DEBUG_EVENTS,
     }
 }
-
 // Logic for communicating with the local backend
 export const DEV_PHONE_NUMBER_SELECTED = "DEV_PHONE_NUMBER_SELECTED"
 export const CONFIGURE_NUMBER_IN_USE = "CONFIGURE_NUMBER_IN_USE"
