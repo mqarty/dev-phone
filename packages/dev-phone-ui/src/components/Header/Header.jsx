@@ -3,10 +3,23 @@ import { Alert, Anchor, Box, Column, Grid, Flex, Text, MediaFigure, MediaBody, M
 import { LogoTwilioIcon } from '@twilio-paste/icons/esm/LogoTwilioIcon';
 import { InformationIcon } from "@twilio-paste/icons/esm/InformationIcon";
 import { CopyIcon } from "@twilio-paste/icons/esm/CopyIcon";
+import { useSelector } from 'react-redux';
 
 function Header({ devPhoneName, numberInUse }) {
     const [showCopyToast, setShowCopyToast] = useState(false);
+    const [showVoiceDetails, setShowVoiceDetails] = useState(false);
     const copyToastTimeoutRef = useRef(null);
+    const voiceDeviceStatus = useSelector((state) => state.voiceDeviceStatus || 'disconnected');
+    const voiceDeviceError = useSelector((state) => state.voiceDeviceError || null);
+
+    const statusConfig = {
+        registered: { label: 'Voice Active', color: '#22c55e', bg: 'rgba(34, 197, 94, 0.18)' },
+        registering: { label: 'Voice Connecting', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.22)' },
+        unregistered: { label: 'Voice Inactive', color: '#f97316', bg: 'rgba(249, 115, 22, 0.20)' },
+        error: { label: 'Voice Error', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.20)' },
+        disconnected: { label: 'Voice Offline', color: '#94a3b8', bg: 'rgba(148, 163, 184, 0.20)' },
+    };
+    const currentStatus = statusConfig[voiceDeviceStatus] || statusConfig.disconnected;
 
     useEffect(() => {
         return () => {
@@ -53,6 +66,15 @@ function Header({ devPhoneName, numberInUse }) {
         showCopiedToast();
     };
 
+    const toggleVoiceDetails = (event) => {
+        event.preventDefault();
+        setShowVoiceDetails((prev) => !prev);
+    };
+
+    const statusDetailsText = voiceDeviceError
+        ? `Last SDK error${voiceDeviceError.code ? ` (${voiceDeviceError.code})` : ''}: ${voiceDeviceError.message}`
+        : 'No recent voice SDK errors captured.';
+
     return (
         <Box
             width="100%"
@@ -88,6 +110,65 @@ function Header({ devPhoneName, numberInUse }) {
                                     <InformationIcon decorative={false} title="Show details about Dev Phone ID" display="block" />
                                 </Anchor>
                             </Tooltip>
+                            <Box as="span" marginLeft="space40" position="relative">
+                                <Tooltip text="Click to view voice registration and last SDK error details.">
+                                    <Anchor href="javascript:void" variant="inverse" onClick={toggleVoiceDetails}>
+                                        <Box
+                                            as="span"
+                                            paddingX="space30"
+                                            paddingY="space10"
+                                            borderRadius="borderRadius20"
+                                            style={{
+                                                backgroundColor: currentStatus.bg,
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '6px',
+                                            }}
+                                        >
+                                            <Box
+                                                as="span"
+                                                borderRadius="borderRadiusCircle"
+                                                style={{
+                                                    width: '8px',
+                                                    height: '8px',
+                                                    backgroundColor: currentStatus.color,
+                                                }}
+                                            />
+                                            <Text
+                                                as="span"
+                                                fontSize="fontSize10"
+                                                fontWeight="fontWeightSemibold"
+                                                color="colorTextInverse"
+                                            >
+                                                {currentStatus.label}
+                                            </Text>
+                                        </Box>
+                                    </Anchor>
+                                </Tooltip>
+                                {showVoiceDetails && (
+                                    <Box
+                                        position="absolute"
+                                        top="100%"
+                                        right="0"
+                                        marginTop="space30"
+                                        padding="space40"
+                                        borderRadius="borderRadius20"
+                                        boxShadow="shadowCard"
+                                        backgroundColor="colorBackgroundBody"
+                                        style={{ minWidth: '300px', zIndex: 1000 }}
+                                    >
+                                        <Text as="p" fontWeight="fontWeightSemibold" marginBottom="space20">
+                                            Voice Device Details
+                                        </Text>
+                                        <Text as="p" fontSize="fontSize20" marginBottom="space20">
+                                            Status: {currentStatus.label}
+                                        </Text>
+                                        <Text as="p" fontSize="fontSize20">
+                                            {statusDetailsText}
+                                        </Text>
+                                    </Box>
+                                )}
+                            </Box>
                         </Flex>
                     </Flex>
                 </Column>
