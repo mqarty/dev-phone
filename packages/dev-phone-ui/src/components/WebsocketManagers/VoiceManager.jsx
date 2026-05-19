@@ -40,6 +40,99 @@ const TwilioVoiceManager = ({ children }) => {
         }));
     }, [dispatch])
 
+    const getCallDiagnostics = useCallback((call) => {
+        const safeStatus = typeof call?.status === 'function' ? call.status() : (call?.status || null)
+        const safeDirection = call?.direction || call?.parameters?.Direction || call?.parameters?.CallDirection || null
+        const parameters = call?.parameters && typeof call.parameters === 'object' ? call.parameters : null
+
+        return {
+            sid: call?.parameters?.CallSid || call?._callSid || call?.sid || null,
+            status: safeStatus,
+            direction: safeDirection,
+            from: call?.parameters?.From || call?.parameters?.from || null,
+            to: call?.parameters?.To || call?.parameters?.to || null,
+            parameters,
+        }
+    }, [])
+
+    const getBrowserMediaDiagnostics = useCallback(async () => {
+        const hasNavigator = typeof navigator !== 'undefined'
+        const hasMediaDevices = !!navigator?.mediaDevices
+        const hasGetUserMedia = typeof navigator?.mediaDevices?.getUserMedia === 'function'
+        const isSecure = typeof window !== 'undefined' ? window.isSecureContext : null
+
+        let permissionsApiSupported = false
+        let microphonePermission = 'unknown'
+        try {
+            permissionsApiSupported = typeof navigator?.permissions?.query === 'function'
+            if (permissionsApiSupported) {
+                const permissionStatus = await navigator.permissions.query({ name: 'microphone' })
+                microphonePermission = permissionStatus?.state || 'unknown'
+            }
+        } catch (error) {
+            microphonePermission = 'unknown'
+        }
+
+        let audioInputCount = null
+        try {
+            if (typeof navigator?.mediaDevices?.enumerateDevices === 'function') {
+                const devices = await navigator.mediaDevices.enumerateDevices()
+                audioInputCount = devices.filter((device) => device.kind === 'audioinput').length
+            }
+        } catch (error) {
+            audioInputCount = null
+        }
+
+        return {
+            hasNavigator,
+            isSecureContext: isSecure,
+            hasMediaDevices,
+            hasGetUserMedia,
+            permissionsApiSupported,
+            microphonePermission,
+            audioInputCount,
+            userAgent: hasNavigator ? navigator.userAgent : null,
+        }
+    }, [])
+
+    const ensureMicrophoneAvailable = useCallback(async () => {
+        const diagnostics = await getBrowserMediaDiagnostics()
+
+        if (!diagnostics.hasMediaDevices || !diagnostics.hasGetUserMedia) {
+            return {
+                ok: false,
+                reason: 'MediaDevices API is unavailable in this browser/runtime.',
+                errorName: 'NotSupportedError',
+                diagnostics,
+            }
+        }
+
+        if (diagnostics.audioInputCount === 0) {
+            return {
+                ok: false,
+                reason: 'No microphone input devices were detected by the browser.',
+                errorName: 'NotFoundError',
+                diagnostics,
+            }
+        }
+
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+            stream.getTracks().forEach((track) => track.stop())
+            return {
+                ok: true,
+                diagnostics,
+            }
+        } catch (error) {
+            return {
+                ok: false,
+                reason: error?.message || 'Unable to capture microphone audio.',
+                errorName: error?.name || 'GetUserMediaError',
+                diagnostics,
+            }
+        }
+    }, [getBrowserMediaDiagnostics])
+
     // responsible for making calls with Twilio Voice SDK
     const makeCall = async (destination) => {
         try {
@@ -73,8 +166,38 @@ const TwilioVoiceManager = ({ children }) => {
     // responsible for handling call events and defining call methods
     useEffect(() => {
         if (activeCall) {
-            deviceDetails.current.acceptCall = () => activeCall.accept()
+            deviceDetails.current.acceptCall = async () => {
+                logDebugEvent('info', 'Answer action triggered', getCallDiagnostics(activeCall));
+
+                const micCheck = await ensureMicrophoneAvailable()
+                if (!micCheck.ok) {
+                    const errorMessage = `Microphone preflight failed: ${micCheck.errorName || 'Error'}${micCheck.reason ? ` - ${micCheck.reason}` : ''}`
+                    dispatch(updateVoiceDeviceStatus('error'))
+                    dispatch(updateVoiceDeviceError({
+                        code: micCheck.errorName || null,
+                        message: errorMessage,
+                        causes: [
+                            'Confirm microphone permission is allowed for this site.',
+                            'Ensure at least one audio input device is available.',
+                            'Use a secure context (https or localhost) in a supported browser.',
+                        ],
+                    }))
+                    logDebugEvent('error', 'Microphone preflight failed before answering', {
+                        call: getCallDiagnostics(activeCall),
+                        ...micCheck,
+                    })
+                    return
+                }
+
+                dispatch(updateVoiceDeviceError(null))
+                logDebugEvent('info', 'Microphone preflight passed', {
+                    call: getCallDiagnostics(activeCall),
+                    diagnostics: micCheck.diagnostics,
+                })
+                activeCall.accept()
+            }
             deviceDetails.current.declineCall = () => {
+                logDebugEvent('info', 'Decline action triggered', getCallDiagnostics(activeCall));
                 activeCall.reject()
                 setActiveCall(null)
             }
@@ -82,6 +205,7 @@ const TwilioVoiceManager = ({ children }) => {
 
             // Responsible for disconnecting a specific call
             deviceDetails.current.hangUp = () => {
+                logDebugEvent('info', 'Hang up action triggered', getCallDiagnostics(activeCall));
                 activeCall.disconnect()
                 setActiveCall(null)
             }
@@ -116,9 +240,7 @@ const TwilioVoiceManager = ({ children }) => {
             })
 
             activeCall.on('disconnect', call => {
-                logDebugEvent('info', 'Call disconnected', {
-                    sid: call?.parameters?.CallSid || call?._callSid || null,
-                });
+                logDebugEvent('info', 'Call disconnected', getCallDiagnostics(call));
                 call.removeAllListeners()
                 setActiveCall(null)
                 updateCallInfo(null)
@@ -147,6 +269,8 @@ const TwilioVoiceManager = ({ children }) => {
                 logDebugEvent('error', 'Active call error', {
                     message: error?.message || 'Unknown call error',
                     code: error?.code || null,
+                    causes: Array.isArray(error?.causes) ? error.causes : [],
+                    call: getCallDiagnostics(activeCall),
                 });
             })
 
@@ -155,7 +279,7 @@ const TwilioVoiceManager = ({ children }) => {
                 updateIsMutedStatus(isMuted);
             })
         }
-    }, [activeCall, logDebugEvent, updateCallInfo, updateIsMutedStatus])
+    }, [activeCall, dispatch, ensureMicrophoneAvailable, getCallDiagnostics, logDebugEvent, updateCallInfo, updateIsMutedStatus])
 
     useEffect(() => {
         if (!twilioAccessToken) {
