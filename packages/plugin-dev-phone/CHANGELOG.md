@@ -1,5 +1,16 @@
 # @twilio-labs/plugin-dev-phone
 
+## 1.0.0-beta.34
+
+### Minor Changes
+
+- 04bc90b: Adds debug console to bottom of Dev Phone UI with basic info about the current voice device status, including connection status and any errors. This is intended to help with debugging Dev Phone setup and connection issues without needing to check container logs.
+
+### Patch Changes
+
+- Updated dependencies [04bc90b]
+  - @mqarty/dev-phone-ui@1.0.0-beta.31
+
 ## 1.0.0-beta.33
 
 ### Minor Changes
