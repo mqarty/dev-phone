@@ -1,5 +1,13 @@
 # @twilio-labs/dev-phone-ui
 
+## 1.0.4
+
+### Patch Changes
+
+- fcd92c1: Auto-generated changeset for staged package updates.
+- fcd92c1: Auto-generated changeset for staged package updates.
+- fcd92c1: Auto-generated changeset for staged package updates.
+
 ## 1.0.3
 
 ### Patch Changes
