@@ -1,5 +1,11 @@
 # @twilio-labs/dev-phone-ui
 
+## 1.0.1
+
+### Patch Changes
+
+- 178afeb: Auto-generated changeset for staged package updates.
+
 ## 1.0.0
 
 ### Major Changes
