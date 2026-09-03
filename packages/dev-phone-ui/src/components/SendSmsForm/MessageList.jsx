@@ -32,13 +32,21 @@ function MessageList({ devPhoneName }) {
                                         {message.body}
                                     </ChatBubble>
                                     <ChatMessageMeta aria-label={!isFromDevPhone ? "said by outbound user" : "said by dev phone"}>
-                                        <ChatMessageMetaItem>
+                                        <Flex flexDirection="column" alignItems="center">
                                             <Avatar size="sizeIcon30" name={message.author} icon={UserIcon} />
-                                            <Flex flexDirection="column">
-                                                <Text>{message.author}</Text>
-                                                <Text fontSize="fontSize70" color="colorTextWeak">{formatTime(message.dateCreated)}</Text>
-                                            </Flex>
-                                        </ChatMessageMetaItem>
+                                            <Text>{message.author}</Text>
+                                            <Box
+                                                borderStyle="solid"
+                                                borderWidth="borderWidth10"
+                                                borderColor="colorBorderWeaker"
+                                                borderRadius="borderRadiusCircle"
+                                                paddingX="space20"
+                                                paddingY="space10"
+                                                marginTop="space20"
+                                            >
+                                                <Text fontSize="fontSize80">{formatTime(message.dateCreated)}</Text>
+                                            </Box>
+                                        </Flex>
                                     </ChatMessageMeta>
                                 </ChatMessage>
                             )
