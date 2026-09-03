@@ -32,12 +32,12 @@ function MessageList({ devPhoneName }) {
                                         {message.body}
                                     </ChatBubble>
                                     <Box paddingTop="space20">
-                                        <Flex flexDirection="column" alignItems="center" gap="space20">
-                                            <Avatar size="sizeIcon30" name={message.author} icon={UserIcon} />
-                                            <Flex flexDirection="column" alignItems="center" gap="space10">
+                                        <Flex flexDirection="column" alignItems="center" gap="space10">
+                                            <Flex flexDirection="row" alignItems="center" gap="space20">
+                                                <Avatar size="sizeIcon30" name={message.author} icon={UserIcon} />
                                                 <Text fontSize="fontSize70" fontWeight="fontWeightNormal">{message.author}</Text>
-                                                <Text fontSize="fontSize70" fontWeight="fontWeightNormal" color="colorTextWeak">{formatTime(message.dateCreated)}</Text>
                                             </Flex>
+                                            <Text fontSize="fontSize70" fontWeight="fontWeightNormal" color="colorTextWeak">{formatTime(message.dateCreated)}</Text>
                                         </Flex>
                                     </Box>
                                 </ChatMessage>
