@@ -9,10 +9,11 @@ jobs:
   changeset-required:
     name: Require changeset for package updates
     runs-on: ubuntu-latest
+    if: github.actor != 'github-actions[bot]'
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@v4.2.0
         with:
           fetch-depth: 0
 
