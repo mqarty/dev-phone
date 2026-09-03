@@ -32,19 +32,20 @@ function MessageList({ devPhoneName }) {
                                         {message.body}
                                     </ChatBubble>
                                     <ChatMessageMeta aria-label={!isFromDevPhone ? "said by outbound user" : "said by dev phone"}>
-                                        <Flex flexDirection="column" alignItems="center">
-                                            <Avatar size="sizeIcon30" name={message.author} icon={UserIcon} />
-                                            <Text>{message.author}</Text>
+                                        <Flex flexDirection="column" alignItems="center" gap="space40">
+                                            <Flex flexDirection="column" alignItems="center" gap="space20">
+                                                <Avatar size="sizeIcon30" name={message.author} icon={UserIcon} />
+                                                <Text fontSize="fontSize70">{message.author}</Text>
+                                            </Flex>
                                             <Box
                                                 borderStyle="solid"
                                                 borderWidth="borderWidth10"
                                                 borderColor="colorBorderWeaker"
-                                                borderRadius="borderRadiusCircle"
-                                                paddingX="space20"
-                                                paddingY="space10"
-                                                marginTop="space20"
+                                                borderRadius="borderRadiusRound"
+                                                paddingX="space30"
+                                                paddingY="space20"
                                             >
-                                                <Text fontSize="fontSize80">{formatTime(message.dateCreated)}</Text>
+                                                <Text fontSize="fontSize70">{formatTime(message.dateCreated)}</Text>
                                             </Box>
                                         </Flex>
                                     </ChatMessageMeta>
