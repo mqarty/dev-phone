@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dev-phone",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start", "-w", "packages/dev-phone-ui"],
+      "port": 3000,
+      "autoPort": true
+    }
+  ]
+}
