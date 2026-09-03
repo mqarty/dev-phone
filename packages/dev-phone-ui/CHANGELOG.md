@@ -1,5 +1,14 @@
 # @twilio-labs/dev-phone-ui
 
+## 1.0.5
+
+### Patch Changes
+
+- 0ceb82d: Auto-generated changeset for staged package updates.
+- 0ceb82d: Auto-generated changeset for staged package updates.
+- 0ceb82d: Auto-generated changeset for staged package updates.
+- 0ceb82d: Auto-generated changeset for staged package updates.
+
 ## 1.0.4
 
 ### Patch Changes
