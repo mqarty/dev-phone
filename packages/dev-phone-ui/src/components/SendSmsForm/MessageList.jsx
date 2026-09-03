@@ -1,5 +1,5 @@
 import {
-    Box, Flex, SkeletonLoader, Label,
+    Box, Flex, SkeletonLoader,
     Text, ChatLog, ChatMessage,
     ChatBubble,
     Avatar
@@ -35,8 +35,8 @@ function MessageList({ devPhoneName }) {
                                         <Flex flexDirection="column" alignItems="center" gap="space20">
                                             <Avatar size="sizeIcon30" name={message.author} icon={UserIcon} />
                                             <Flex flexDirection="column" alignItems="center" gap="space10">
-                                                <Text fontSize="fontSize70">{message.author}</Text>
-                                                <Label fontSize="fontSize70">{formatTime(message.dateCreated)}</Label>
+                                                <Text fontSize="fontSize70" fontWeight="fontWeightNormal">{message.author}</Text>
+                                                <Text fontSize="fontSize70" fontWeight="fontWeightNormal" color="colorTextWeak">{formatTime(message.dateCreated)}</Text>
                                             </Flex>
                                         </Flex>
                                     </Box>
