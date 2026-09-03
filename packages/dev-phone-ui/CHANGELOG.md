@@ -1,5 +1,16 @@
 # @twilio-labs/dev-phone-ui
 
+## 1.0.6
+
+### Patch Changes
+
+- 3f68920: Auto-generated changeset for staged package updates.
+- 3f68920: Auto-generated changeset for staged package updates.
+- 3f68920: Auto-generated changeset for staged package updates.
+- 3f68920: Auto-generated changeset for staged package updates.
+- 3f68920: Auto-generated changeset for staged package updates.
+- 3f68920: Auto-generated changeset for staged package updates.
+
 ## 1.0.5
 
 ### Patch Changes
