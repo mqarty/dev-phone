@@ -1,5 +1,11 @@
 # @twilio-labs/dev-phone-ui
 
+## 1.0.0-beta.32
+
+### Patch Changes
+
+- f6cc468: Auto-generated changeset for staged package updates.
+
 ## 1.0.0-beta.31
 
 ### Minor Changes
