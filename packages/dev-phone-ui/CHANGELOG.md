@@ -1,5 +1,13 @@
 # @twilio-labs/dev-phone-ui
 
+## 1.0.2
+
+### Patch Changes
+
+- a985508: Auto-generated changeset for staged package updates.
+- a985508: Auto-generated changeset for staged package updates.
+- a985508: Auto-generated changeset for staged package updates.
+
 ## 1.0.1
 
 ### Patch Changes
