@@ -1,5 +1,16 @@
 # @twilio-labs/plugin-dev-phone
 
+## 1.0.0-beta.35
+
+### Minor Changes
+
+- a3f774f: Show Timestmaps in SMS panel
+
+### Patch Changes
+
+- Updated dependencies [a3f774f]
+  - @mqarty/dev-phone-ui@1.0.0-beta.33
+
 ## 1.0.0-beta.34
 
 ### Minor Changes
