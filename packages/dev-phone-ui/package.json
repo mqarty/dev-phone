@@ -1,6 +1,6 @@
 {
   "name": "@mqarty/dev-phone-ui",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A react-based UI for the Twilio CLI softphone plugin",
   "main": "dist/index.html",
   "scripts": {
