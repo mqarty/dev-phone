@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<!-- Standalone preview of a single MessageList entry. Open directly in a browser (no dev server needed). -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>MessageList preview</title>
+  <style>
+    body { margin: 0; padding: 40px; background: #f4f4f6; }
+    #root { max-width: 420px; }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18",
+        "react-dom/client": "https://esm.sh/react-dom@18/client",
+        "@twilio-paste/core/theme": "https://esm.sh/@twilio-paste/core@19/theme?deps=react@18,react-dom@18",
+        "@twilio-paste/core": "https://esm.sh/@twilio-paste/core@19?deps=react@18,react-dom@18",
+        "@twilio-paste/icons/esm/UserIcon": "https://esm.sh/@twilio-paste/icons@11/esm/UserIcon?deps=react@18,react-dom@18"
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" data-presets="react" data-type="module">
+    import React from "react";
+    import { createRoot } from "react-dom/client";
+    import { Theme } from "@twilio-paste/core/theme";
+    import { Box, Flex, Text, ChatLog, ChatMessage, ChatBubble, Avatar } from "@twilio-paste/core";
+    import { UserIcon } from "@twilio-paste/icons/esm/UserIcon";
+
+    // Mirrors MessageList.jsx formatTime()
+    function formatTime(date) {
+      if (!date) return '';
+      const d = new Date(date);
+      return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    }
+
+    const devPhoneName = "dev-phone";
+    const message = {
+      author: "+18058370514",
+      body: "RadiantGraph Test: Reminder for a mock appointment scheduled for tomorrow at 9:00 AM PST. Please verify the notification latency in the admin dashboard. Msg & data rates may apply. Reply STOP to cancel.",
+      dateCreated: new Date(),
+    };
+
+    function Preview() {
+      const isFromDevPhone = message.author === devPhoneName;
+      return (
+        <ChatLog>
+          <ChatMessage variant={!isFromDevPhone ? "outbound" : "inbound"}>
+            <ChatBubble>
+              {message.body}
+            </ChatBubble>
+            <Box paddingTop="space20">
+              <Flex flexDirection="column" alignItems="center" gap="space20">
+                <Avatar size="sizeIcon30" name={message.author} icon={UserIcon} />
+                <Flex flexDirection="column" alignItems="center" gap="space10">
+                  <Text fontSize="fontSize70" fontWeight="fontWeightNormal">{message.author}</Text>
+                  <Text fontSize="fontSize70" fontWeight="fontWeightNormal" color="colorTextWeak">{formatTime(message.dateCreated)}</Text>
+                </Flex>
+              </Flex>
+            </Box>
+          </ChatMessage>
+        </ChatLog>
+      );
+    }
+
+    createRoot(document.getElementById("root")).render(
+      <Theme.Provider theme="default">
+        <Preview />
+      </Theme.Provider>
+    );
+  </script>
+</body>
+</html>
