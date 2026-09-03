@@ -1,5 +1,31 @@
 # @twilio-labs/plugin-dev-phone
 
+## 1.0.0
+
+### Major Changes
+
+- 625de03: simple
+
+### Minor Changes
+
+- a1aab71: Show Timestmaps in SMS panel
+- 92934c4: Show Timestmaps in SMS panel
+- f271a8c: Show Timestmaps in SMS panel
+- d42dea3: Show Timestmaps in SMS panel
+- 208c580: Show Timestmaps in SMS panel
+- 7c4f338: Update actions
+
+### Patch Changes
+
+- Updated dependencies [a1aab71]
+- Updated dependencies [92934c4]
+- Updated dependencies [f271a8c]
+- Updated dependencies [d42dea3]
+- Updated dependencies [208c580]
+- Updated dependencies [7c4f338]
+- Updated dependencies [625de03]
+  - @mqarty/dev-phone-ui@1.0.0
+
 ## 1.0.0-beta.35
 
 ### Minor Changes
