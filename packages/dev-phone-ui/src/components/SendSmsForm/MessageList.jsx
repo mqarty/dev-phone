@@ -1,7 +1,7 @@
 import {
     Box, Flex, SkeletonLoader, Label,
     Text, ChatLog, ChatMessage,
-    ChatBubble, ChatMessageMeta, ChatMessageMetaItem,
+    ChatBubble,
     Avatar
 } from "@twilio-paste/core"
 import { UserIcon } from '@twilio-paste/icons/esm/UserIcon';
@@ -31,15 +31,15 @@ function MessageList({ devPhoneName }) {
                                     <ChatBubble>
                                         {message.body}
                                     </ChatBubble>
-                                    <ChatMessageMeta aria-label={!isFromDevPhone ? "said by outbound user" : "said by dev phone"}>
-                                        <Flex flexDirection="column" alignItems="center" gap="space40">
+                                    <Box paddingTop="space20">
+                                        <Flex flexDirection="column" alignItems="center" gap="space20">
                                             <Avatar size="sizeIcon30" name={message.author} icon={UserIcon} />
-                                            <Flex flexDirection="column" alignItems="center" gap="space20">
+                                            <Flex flexDirection="column" alignItems="center" gap="space10">
                                                 <Text fontSize="fontSize70">{message.author}</Text>
                                                 <Label fontSize="fontSize70">{formatTime(message.dateCreated)}</Label>
                                             </Flex>
                                         </Flex>
-                                    </ChatMessageMeta>
+                                    </Box>
                                 </ChatMessage>
                             )
                         })
